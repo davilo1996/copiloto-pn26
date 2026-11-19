@@ -1,0 +1,1466 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Copiloto PN26">
+<meta name="theme-color" content="#0b0d10">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>Copiloto PN26</title>
+<style>
+:root{
+  --bg:#f3f4f6; --card:#ffffff; --card2:#eef0f3; --line:#d5d9e0; --text:#0b0d10; --muted:#5b6573;
+  --accent:#d98800; --accent-ink:#ffffff; --ok:#12924a; --late:#d92d20; --early:#1769d1; --warn:#c26a00;
+  --big:#0b0d10;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]):not([data-theme="red"]){
+    --bg:#0b0d10; --card:#151a21; --card2:#1d232c; --line:#2a323d; --text:#f2f4f7; --muted:#8d97a5;
+    --accent:#ffb020; --accent-ink:#0b0d10; --ok:#34d27b; --late:#ff5a4f; --early:#4aa8ff; --warn:#ffb020; --big:#ffffff;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b0d10; --card:#151a21; --card2:#1d232c; --line:#2a323d; --text:#f2f4f7; --muted:#8d97a5;
+  --accent:#ffb020; --accent-ink:#0b0d10; --ok:#34d27b; --late:#ff5a4f; --early:#4aa8ff; --warn:#ffb020; --big:#ffffff;
+}
+:root[data-theme="red"]{
+  --bg:#000000; --card:#0d0000; --card2:#170000; --line:#2b0505; --text:#ff4a3d; --muted:#9a2a22;
+  --accent:#ff4a3d; --accent-ink:#000; --ok:#ff4a3d; --late:#ff7a6e; --early:#d03a2f; --warn:#ff4a3d; --big:#ff4a3d;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif;
+  -webkit-text-size-adjust:100%;touch-action:manipulation;overscroll-behavior:none}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-user-select:none;user-select:none}
+.num{font-variant-numeric:tabular-nums}
+.hidden{display:none!important}
+
+/* ---------- cabecera ---------- */
+header{display:flex;align-items:center;gap:12px;padding:8px 14px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.brand{font-weight:800;font-size:15px;line-height:1.05;letter-spacing:.02em;white-space:nowrap}
+.brand small{display:block;font-weight:600;color:var(--muted);font-size:11px;letter-spacing:.06em}
+nav.tabs{display:flex;gap:4px;margin-left:8px;overflow-x:auto;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{border:0;background:transparent;padding:10px 14px;border-radius:10px;font-weight:700;font-size:15px;color:var(--muted);white-space:nowrap}
+nav.tabs button.on{background:var(--card2);color:var(--text)}
+.spacer{flex:1}
+.seg{display:inline-flex;background:var(--card2);border-radius:12px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:9px 14px;border-radius:9px;font-weight:800;font-size:14px;color:var(--muted);letter-spacing:.04em}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.seg.cond button[data-v="lluvia"].on{background:var(--early);color:#fff}
+.themebtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card2);border-radius:12px;padding:8px 12px;min-height:42px;font-weight:800;font-size:13px;letter-spacing:.05em;color:var(--text)}
+.themebtn svg{width:20px;height:20px;flex:0 0 auto}
+.clock{font-weight:800;font-size:26px;letter-spacing:.01em;white-space:nowrap}
+.clock small{font-size:16px;color:var(--muted)}
+
+main{padding:12px 14px 24px}
+section{display:none}
+section.on{display:block}
+
+/* ---------- tarjetas ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;position:relative}
+.lbl{font-size:12px;font-weight:800;letter-spacing:.09em;color:var(--muted);text-transform:uppercase;display:flex;gap:8px;align-items:center}
+.sub{color:var(--muted);font-size:15px;font-weight:600}
+.badge{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;padding:3px 7px;border-radius:6px;background:var(--card2);color:var(--muted);text-transform:uppercase}
+.badge.acc{background:var(--accent);color:var(--accent-ink)}
+.badge.warn{background:var(--late);color:#fff}
+.badge.ok{background:var(--ok);color:#fff}
+.badge.blue{background:var(--early);color:#fff}
+
+.btn{border:1px solid var(--line);background:var(--card2);border-radius:14px;padding:12px 16px;font-weight:800;font-size:16px;min-height:52px;letter-spacing:.02em}
+.btn:active{transform:scale(.98);filter:brightness(1.1)}
+.btn.acc{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.go{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.danger{background:var(--late);border-color:var(--late);color:#fff}
+.btn.blue{background:var(--early);border-color:var(--early);color:#fff}
+.btn.big{min-height:68px;font-size:20px}
+.btn.sm{min-height:42px;padding:8px 12px;font-size:14px;border-radius:11px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row > .btn{flex:1}
+
+/* ---------- barra de tramos ---------- */
+.tcbar{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+.tcbar::-webkit-scrollbar{display:none}
+.tcbar button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);border-radius:12px;min-width:62px;padding:8px 10px;font-weight:800;font-size:16px;position:relative}
+.tcbar button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tcbar button .dot{position:absolute;top:4px;right:5px;width:7px;height:7px;border-radius:50%}
+.tcbar button .dot.w{background:var(--late)}
+.tcbar button .dot.d{background:var(--ok)}
+
+/* ---------- pantalla carrera ---------- */
+.race{display:grid;grid-template-columns:1.3fr 1fr;gap:12px}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.media-card{padding-bottom:10px}
+.media-big{display:flex;align-items:baseline;gap:10px;line-height:.9;margin:4px 0 6px}
+.media-big #mediaNow{font-size:clamp(110px,15vw,210px);font-weight:900;letter-spacing:-.04em;color:var(--big)}
+.media-big #mediaNow.txt{font-size:clamp(56px,7vw,96px);letter-spacing:-.02em}
+#pilot .p-media.txt{font-size:min(20vh,16vw)}
+.next-v.txt{font-size:clamp(36px,4.5vw,56px)}
+.media-big .unit{font-size:28px;font-weight:800;color:var(--muted)}
+.media-card .tag{position:absolute;top:14px;right:16px;display:flex;gap:6px}
+.gpsspd{font-size:22px;font-weight:800}
+.next-row{display:flex;align-items:center;gap:18px;margin-top:4px}
+.next-v{font-size:clamp(56px,7.5vw,96px);font-weight:900;letter-spacing:-.03em;line-height:1;min-width:2.6ch}
+.next-v small{font-size:20px;color:var(--muted);font-weight:800;margin-left:4px}
+.next-info{display:flex;flex-direction:column;gap:2px}
+.next-info .a{font-size:32px;font-weight:800}
+.next-info .b{font-size:20px;font-weight:700;color:var(--muted)}
+.bar{height:10px;background:var(--card2);border-radius:6px;overflow:hidden;margin-top:12px}
+.bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:6px;transition:width .2s linear}
+.next-card.alert{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent) inset}
+.next-card.alert .next-info .a{color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat .val{font-size:clamp(30px,3.6vw,44px);font-weight:900;letter-spacing:-.02em;margin-top:4px}
+.stat .sub{font-size:13px}
+.warnbox{border:2px dashed var(--late);border-radius:14px;padding:12px;font-weight:700;color:var(--late);margin-top:8px;font-size:15px}
+
+.countdown{font-size:clamp(60px,8vw,104px);font-weight:900;letter-spacing:-.03em;line-height:1;margin:6px 0}
+.timebtn{border:1px dashed var(--line);background:var(--card2);border-radius:14px;padding:8px 14px;font-weight:900;font-size:38px;letter-spacing:.01em;width:100%;text-align:left}
+.timebtn small{display:block;font-size:12px;color:var(--muted);letter-spacing:.08em;font-weight:800}
+
+.refbtn{width:100%;border:0;border-radius:16px;background:var(--accent);color:var(--accent-ink);padding:12px 14px;text-align:left;min-height:86px}
+.refbtn small{display:block;font-size:13px;font-weight:800;letter-spacing:.08em;opacity:.8}
+.refbtn b{font-size:44px;font-weight:900;letter-spacing:-.02em}
+.diff{font-size:clamp(44px,5.5vw,64px);font-weight:900;letter-spacing:-.03em;line-height:1}
+.diff.late{color:var(--late)} .diff.early{color:var(--early)} .diff.ok{color:var(--ok)}
+.difflbl{font-weight:900;letter-spacing:.08em;font-size:14px}
+.marks{font-size:14px;color:var(--muted);margin-top:6px;line-height:1.5}
+.marks b{color:var(--text)}
+
+.upl{list-style:none;margin:6px 0 0;padding:0}
+.upl li{display:grid;grid-template-columns:5.5em 1fr auto;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:17px;align-items:baseline}
+.upl li:first-child{border-top:0}
+.upl .v{font-weight:900;font-size:22px}
+.upl .t{color:var(--muted);font-weight:700}
+
+/* ---------- tablas ---------- */
+.tbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+table.t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+table.t th{background:var(--card2);text-align:right;font-size:12px;letter-spacing:.08em;color:var(--muted);padding:8px 10px;text-transform:uppercase}
+table.t td{padding:7px 10px;text-align:right;font-size:20px;font-weight:700;border-bottom:1px solid var(--line)}
+table.t tr.chg td{background:color-mix(in srgb,var(--accent) 18%,transparent);font-weight:900}
+table.t tr.unc td{color:var(--muted);font-style:italic}
+table.t tr.cur td{background:var(--accent);color:var(--accent-ink)}
+table.t td.m{color:var(--muted);font-size:16px}
+.tables-wrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px;align-items:start}
+
+/* ---------- tramos ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.tc-card h3{margin:0 0 6px;font-size:26px;font-weight:900;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:15px;margin:8px 0 10px}
+.kv span:nth-child(odd){color:var(--muted);font-weight:600}
+.kv span:nth-child(even){font-weight:800;text-align:right}
+.mini{display:flex;height:22px;border-radius:6px;overflow:hidden;margin:6px 0 10px;background:var(--card2)}
+.mini i{display:block;height:100%;border-right:1px solid var(--card)}
+
+/* ---------- ajustes ---------- */
+.settings{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;align-items:start}
+.settings h3{margin:0 0 10px;font-size:18px}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.field label{font-size:13px;color:var(--muted);font-weight:700}
+input.in,select.in,textarea.in{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:18px;font-weight:700;width:100%}
+textarea.in{font-weight:500;font-size:16px;min-height:80px}
+.switch{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-weight:700;gap:10px}
+.switch:first-of-type{border-top:0}
+.tog{width:58px;height:34px;border-radius:20px;background:var(--line);border:0;position:relative;flex:0 0 auto}
+.tog::after{content:"";position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:50%;background:#fff;transition:left .15s}
+.tog.on{background:var(--ok)} .tog.on::after{left:27px}
+.note{font-size:14px;color:var(--muted);line-height:1.45}
+.note b{color:var(--text)}
+
+/* ---------- registro ---------- */
+.log-item{margin-bottom:12px}
+.log-item table{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums;margin-top:8px}
+.log-item td,.log-item th{padding:5px 6px;border-top:1px solid var(--line);text-align:right}
+.log-item th{color:var(--muted);font-size:12px;letter-spacing:.06em}
+
+/* ---------- capas ---------- */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+.sheet{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;width:min(520px,100%);max-height:calc(100vh - 32px);overflow:auto}
+.sheet.wide{width:min(980px,100%)}
+.kp-title{font-weight:800;font-size:16px;color:var(--muted)}
+.kp-disp{font-size:56px;font-weight:900;text-align:right;padding:8px 6px;border-bottom:2px solid var(--line);min-height:80px;letter-spacing:-.01em}
+.kp-prev{text-align:right;color:var(--muted);font-weight:700;min-height:22px;margin:4px 0 10px}
+.kp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kp-grid button{min-height:72px;font-size:32px;font-weight:800;border-radius:16px;border:1px solid var(--line);background:var(--card2)}
+.kp-grid button.ok{background:var(--ok);color:#fff;border-color:var(--ok);font-size:24px}
+.kp-grid button.cx{font-size:20px}
+.kp-quick{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+
+#pilot{background:var(--bg);padding:20px;flex-direction:column;align-items:stretch;justify-content:space-between;text-align:center}
+#pilot .p-lbl{font-size:22px;font-weight:900;letter-spacing:.12em;color:var(--muted)}
+#pilot .p-media{font-size:min(44vh,38vw);font-weight:900;line-height:.9;letter-spacing:-.05em;color:var(--big)}
+#pilot .p-next{font-size:min(9vh,7vw);font-weight:900}
+#pilot .p-next.alert{color:var(--accent)}
+#pilot .p-diff{font-size:min(8vh,6vw);font-weight:900}
+#pilot .p-hint{font-size:14px;color:var(--muted)}
+
+.ed-table{width:100%;border-collapse:collapse}
+.ed-table th{font-size:12px;color:var(--muted);text-align:left;padding:4px;letter-spacing:.06em}
+.ed-table td{padding:3px}
+.ed-table input{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px 8px;font-size:17px;font-weight:700;width:100%;min-width:0}
+.ed-table td.from{font-weight:800;color:var(--muted);white-space:nowrap;font-size:16px;padding-right:8px}
+
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:12px 18px;border-radius:14px;font-weight:700;z-index:80;max-width:90vw;display:flex;gap:14px;align-items:center;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+#toast button{border:0;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:8px 12px;font-weight:800}
+
+@media (max-width:900px), (orientation:portrait){
+  .race{grid-template-columns:1fr}
+  .brand{display:none}
+  nav.tabs{margin-left:0}
+}
+@media (max-width:640px){
+  header{flex-wrap:wrap}
+  nav.tabs{order:3;width:100%;margin-left:0}
+  .clock{font-size:20px}
+  .stats{grid-template-columns:1fr 1fr}
+  .stats .stat:last-child{grid-column:1 / -1}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">PRIMERAS NIEVES<small>XXV RALLYE HISTÓRICO · 2026</small></div>
+  <nav class="tabs" id="tabs">
+    <button data-tab="carrera" class="on">Carrera</button>
+    <button data-tab="tabla">Tablas</button>
+    <button data-tab="tramos">Tramos</button>
+    <button data-tab="registro">Registro</button>
+    <button data-tab="ajustes">Ajustes</button>
+  </nav>
+  <div class="spacer"></div>
+  <div class="seg cond" id="condSeg">
+    <button data-v="seco">SECO</button>
+    <button data-v="lluvia">LLUVIA</button>
+  </div>
+  <button class="themebtn" id="themeBtn" aria-label="Cambiar modo claro / oscuro"></button>
+  <div class="clock num" id="clock">--:--:--</div>
+</header>
+
+<main>
+<!-- ================= CARRERA ================= -->
+<section id="tab-carrera" class="on">
+  <div class="tcbar" id="tcbar"></div>
+  <div class="race">
+    <div class="col">
+      <div class="card media-card">
+        <div class="lbl"><span id="segInfo">MEDIA</span></div>
+        <div class="tag" id="mediaTags"></div>
+        <div class="media-big"><span id="mediaNow" class="num">--</span><span class="unit">km/h</span></div>
+        <div class="row" style="justify-content:space-between">
+          <div class="sub num" id="segRange"></div>
+          <div class="gpsspd num hidden" id="gpsSpeed"></div>
+        </div>
+        <div id="mediaWarn" class="warnbox hidden"></div>
+      </div>
+
+      <div class="card next-card" id="nextCard">
+        <div class="lbl">Próximo cambio</div>
+        <div class="next-row">
+          <div class="next-v num" id="nextV">--</div>
+          <div class="next-info">
+            <div class="a num" id="nextDist"></div>
+            <div class="b num" id="nextTime"></div>
+          </div>
+        </div>
+        <div class="bar"><i id="nextBar"></i></div>
+        <button id="btnHito" class="btn big acc hidden" style="width:100%;margin-top:12px"></button>
+      </div>
+
+      <div class="stats">
+        <div class="card stat"><div class="lbl">Km ideal</div><div class="val num" id="kmIdeal">0,000</div><div class="sub num" id="kmGps"></div></div>
+        <div class="card stat"><div class="lbl">Crono</div><div class="val num" id="chrono">0:00,0</div><div class="sub num" id="chronoSub"></div></div>
+        <div class="card stat"><div class="lbl">Resta</div><div class="val num" id="remain">--</div><div class="sub num" id="eta"></div></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card" id="startCard"></div>
+
+      <div class="card" id="checkCard">
+        <div class="lbl">Comprobación con tripmaster</div>
+        <div style="display:grid;grid-template-columns:1.25fr 1fr;gap:10px;margin-top:8px">
+          <button class="refbtn" id="btnRef"><small>TOCA AL PASAR POR</small><b class="num" id="refKm">0,100</b></button>
+          <button class="btn" id="btnMark" style="min-height:86px">MARCA<br><span class="sub" style="font-size:13px">y teclear lectura</span></button>
+        </div>
+        <div class="row" style="margin-top:12px;align-items:flex-end;justify-content:space-between">
+          <div>
+            <div class="diff num" id="diffVal">—</div>
+            <div class="difflbl" id="diffLbl">SIN MARCAS</div>
+          </div>
+          <div class="sub num" id="recover" style="text-align:right"></div>
+        </div>
+        <div class="marks num" id="marksList"></div>
+        <div id="gpsLive" class="hidden" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">
+          <div class="row" style="justify-content:space-between">
+            <span class="lbl">GPS en directo</span><span class="sub num" id="gpsInfo"></span>
+          </div>
+          <div class="row" style="justify-content:space-between;align-items:baseline">
+            <div class="diff num" id="gpsDiff" style="font-size:40px">—</div>
+            <div class="difflbl" id="gpsDiffLbl"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="lbl">Siguientes cambios</div>
+        <ul class="upl" id="upList"></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TABLAS ================= -->
+<section id="tab-tabla">
+  <div class="tbar">
+    <select class="in" id="tblTc" style="width:auto"></select>
+    <div class="seg" id="tblStep">
+      <button data-v="0.1">100 m</button>
+      <button data-v="0.2">200 m</button>
+      <button data-v="0.5">500 m</button>
+    </div>
+    <button class="btn sm" id="tblFollow">Seguir posición</button>
+    <span class="sub" id="tblInfo"></span>
+  </div>
+  <div id="tblWrap"></div>
+</section>
+
+<!-- ================= TRAMOS ================= -->
+<section id="tab-tramos">
+  <p class="note" style="margin-top:0">Datos del <b>Cuadro de cambios de medias</b> (seco y lluvia), verificados contra las tablas oficiales al centésimo. Toca <b>Editar</b> para completar los tramos con <b>TABLAS</b>, <b>HITOS</b> o referencias del libro de ruta, poner la hora de salida prevista o añadir notas.</p>
+  <div class="grid" id="tcGrid"></div>
+</section>
+
+<!-- ================= REGISTRO ================= -->
+<section id="tab-registro">
+  <div class="row" style="margin-bottom:12px">
+    <button class="btn sm" id="logCsv" style="flex:0 0 auto">Exportar CSV</button>
+    <button class="btn sm danger" id="logClear" style="flex:0 0 auto">Borrar registro</button>
+    <span class="sub" id="logInfo"></span>
+  </div>
+  <div id="logList"></div>
+</section>
+
+<!-- ================= AJUSTES ================= -->
+<section id="tab-ajustes">
+  <div class="settings">
+    <div class="card">
+      <h3>Hora oficial</h3>
+      <div class="clock num" id="clock2" style="font-size:44px">--:--:--</div>
+      <p class="note">Ajusta el reloj del iPad a la hora oficial del rallye. Pulsa <b>Sincronizar</b> justo cuando el reloj oficial marque el segundo <b>:00</b> de un minuto.</p>
+      <button class="btn acc big" id="syncMin" style="width:100%">SINCRONIZAR AL MINUTO :00</button>
+      <div class="row" style="margin-top:8px">
+        <button class="btn sm" data-off="-1000">−1 s</button>
+        <button class="btn sm" data-off="-100">−0,1</button>
+        <button class="btn sm" data-off="100">+0,1</button>
+        <button class="btn sm" data-off="1000">+1 s</button>
+        <button class="btn sm" data-off="0">Reset</button>
+      </div>
+      <p class="note num" id="offInfo"></p>
+    </div>
+
+    <div class="card">
+      <h3>Calibración del tripmaster</h3>
+      <p class="note">Con un tramo de distancia conocida (p. ej. el tramo de calibración del libro de ruta): introduce la distancia oficial y lo que marcó tu tripmaster. El factor se aplica a todas las lecturas que tecleas.</p>
+      <div class="row">
+        <div class="field" style="flex:1"><label>Distancia oficial (km)</label><input class="in num" id="calOff" inputmode="decimal" placeholder="10,000"></div>
+        <div class="field" style="flex:1"><label>Lectura tripmaster (km)</label><input class="in num" id="calTrip" inputmode="decimal" placeholder="10,040"></div>
+      </div>
+      <div class="row">
+        <button class="btn sm acc" id="calApply">Calcular factor</button>
+        <button class="btn sm" id="calReset">Factor 1,0000</button>
+      </div>
+      <p class="note num" id="calInfo"></p>
+    </div>
+
+    <div class="card">
+      <h3>Avisos</h3>
+      <div class="switch">Pitidos <button class="tog" data-set="beep"></button></div>
+      <div class="switch">Voz (anuncia cambios de media) <button class="tog" data-set="voice"></button></div>
+      <div class="switch">Mantener pantalla encendida <button class="tog" data-set="wake"></button></div>
+      <div class="field" style="margin-top:8px"><label>Aviso previo al cambio de media</label>
+        <div class="seg" id="leadSeg"><button data-v="5">5 s</button><button data-v="10">10 s</button><button data-v="15">15 s</button><button data-v="20">20 s</button></div>
+      </div>
+      <div class="field"><label>Pitido suave en cada referencia de distancia</label>
+        <div class="seg" id="refBeepSeg"><button data-v="0">No</button><button data-v="0.1">100 m</button><button data-v="0.2">200 m</button><button data-v="0.5">500 m</button><button data-v="1">1 km</button></div>
+      </div>
+      <div class="field"><label>Paso de la referencia "Toca al pasar por"</label>
+        <div class="seg" id="refStepSeg"><button data-v="0.1">100 m</button><button data-v="0.2">200 m</button><button data-v="0.5">500 m</button><button data-v="1">1 km</button></div>
+      </div>
+      <button class="btn sm" id="testSound">Probar sonido y voz</button>
+    </div>
+
+    <div class="card">
+      <h3>GPS (opcional)</h3>
+      <div class="switch">Usar GPS del iPad <button class="tog" data-set="gpsOn"></button></div>
+      <div class="switch">Corregir distancia GPS al marcar <button class="tog" data-set="gpsSync"></button></div>
+      <div class="field"><label>Factor de corrección GPS</label><input class="in num" id="gpsFactor" inputmode="decimal"></div>
+      <p class="note" id="gpsStatus"></p>
+      <p class="note">Mide la distancia recorrida desde la salida y calcula el adelanto/retraso en directo. Solo los iPad con <b>datos móviles (Cellular)</b> tienen GPS; los Wi-Fi no lo tienen. Es una ayuda: el tripmaster manda. La carga de la app sin conexión requiere abrirla desde una dirección <b>https</b>.</p>
+    </div>
+
+    <div class="card">
+      <h3>Calculadora de regularidad</h3>
+      <div class="row">
+        <div class="field" style="flex:1"><label>Distancia (km)</label><input class="in num" id="cDist" inputmode="decimal"></div>
+        <div class="field" style="flex:1"><label>Media (km/h)</label><input class="in num" id="cVel" inputmode="decimal"></div>
+        <div class="field" style="flex:1"><label>Tiempo (m:ss,d)</label><input class="in num" id="cTime" inputmode="decimal" placeholder="4:11,7"></div>
+      </div>
+      <div class="row">
+        <button class="btn sm" data-calc="time">→ Tiempo</button>
+        <button class="btn sm" data-calc="vel">→ Media</button>
+        <button class="btn sm" data-calc="dist">→ Distancia</button>
+      </div>
+      <p class="note">Rellena dos campos y calcula el tercero. Ej.: 0,100 km a 49,9 km/h = 7,21 s.</p>
+    </div>
+
+    <div class="card">
+      <h3>Pantalla</h3>
+      <div class="seg" id="themeSeg"><button data-v="auto">Auto</button><button data-v="light">Claro</button><button data-v="dark">Oscuro</button><button data-v="red">Rojo</button></div>
+      <p class="note">También se cambia con el botón ☀/☾ de la cabecera. “Claro” es el más legible al sol; “Oscuro” para la noche o túneles; “Rojo” conserva la visión nocturna; “Auto” sigue el modo del iPad.</p>
+    </div>
+
+    <div class="card">
+      <h3>Datos y copia de seguridad</h3>
+      <div class="row">
+        <button class="btn sm" id="expJson">Exportar todo</button>
+        <label class="btn sm" style="display:inline-flex;align-items:center;justify-content:center">Importar<input type="file" id="impJson" accept="application/json,.json" class="hidden"></label>
+        <button class="btn sm danger" id="resetAll">Restaurar fábrica</button>
+      </div>
+      <p class="note">Todo se guarda en el propio iPad (sin internet). Exporta una copia antes de la carrera si has editado tramos.</p>
+    </div>
+
+    <div class="card">
+      <h3>Uso sin conexión</h3>
+      <p class="note">1. Abre la app en Safari desde su dirección https con internet.<br>2. Botón <b>Compartir → Añadir a pantalla de inicio</b>.<br>3. Ábrela desde el icono una vez con internet: queda guardada y funciona en modo avión.</p>
+      <p class="note num" id="swInfo"></p>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ================= TECLADO ================= -->
+<div class="overlay hidden" id="keypad">
+  <div class="sheet">
+    <div class="kp-title" id="kpTitle"></div>
+    <div class="kp-disp num" id="kpDisp"></div>
+    <div class="kp-prev num" id="kpPrev"></div>
+    <div class="kp-quick" id="kpQuick"></div>
+    <div class="kp-grid">
+      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+      <button data-k="," id="kpComma">,</button><button data-k="0">0</button><button data-k="del">⌫</button>
+      <button data-k="cancel" class="cx">Cancelar</button><button data-k="clear" class="cx">Borrar</button><button data-k="ok" class="ok">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PANTALLA PILOTO ================= -->
+<div class="overlay hidden" id="pilot">
+  <div><div class="p-lbl" id="pTc">MEDIA</div></div>
+  <div class="p-media num" id="pMedia">--</div>
+  <div class="p-next num" id="pNext"></div>
+  <div class="p-diff num" id="pDiff"></div>
+  <div class="p-hint">Toca para volver</div>
+</div>
+
+<!-- ================= EDITOR ================= -->
+<div class="overlay hidden" id="editor">
+  <div class="sheet wide">
+    <div class="row" style="justify-content:space-between;margin-bottom:6px">
+      <h2 style="margin:0" id="edTitle">TC</h2>
+      <label class="row" style="font-weight:700"><input type="checkbox" id="edLanzada" style="width:22px;height:22px"> Salida lanzada</label>
+    </div>
+    <p class="note">“Hasta” vacío = punto que no tiene km (HITO, SEÑAL…). Ponle un nombre en “Referencia” y, si lo conoces, el km. Si lo dejas vacío, en carrera aparecerá un botón “Paso por…”. Media vacía = sin media definida.</p>
+    <table class="ed-table">
+      <thead><tr><th>Desde</th><th>Hasta (km)</th><th>Referencia</th><th>Media seco</th><th>Media lluvia</th><th></th></tr></thead>
+      <tbody id="edBody"></tbody>
+    </table>
+    <div class="row" style="margin:10px 0">
+      <button class="btn sm" id="edAdd">+ Añadir fila</button>
+      <button class="btn sm" id="edRestore">Restaurar oficial</button>
+    </div>
+    <div class="row">
+      <div class="field" style="flex:1"><label>Hora de salida prevista (carnet)</label><input class="in num" id="edStart" placeholder="10:31:00" inputmode="numeric"></div>
+    </div>
+    <div class="field"><label>Notas (libro de ruta, peligros, referencias…)</label><textarea class="in" id="edNotes"></textarea></div>
+    <div class="row">
+      <button class="btn" id="edCancel">Cancelar</button>
+      <button class="btn acc" id="edSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="hidden"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   DATOS OFICIALES — Cuadro de cambios de medias (seco / lluvia)
+   [desde, hasta, media seco, media lluvia]; texto = referencia/nota
+   ===================================================================== */
+const OFFICIAL = [{"id":"TC1","lanzada":false,"segs":[[0,1.94,49,46],[1.94,2.2,20,20],[2.2,3.35,28,28],[3.35,5.5,49.9,46.9],[5.5,8.05,38,36],[8.05,8.4,30,30],[8.4,11.071,49,46]]},{"id":"TC2","lanzada":false,"segs":[[0,2.36,37,34],[2.36,4.0,39,36],[4.0,4.479,37,35],[4.479,5.679,49.5,46]]},{"id":"TC3","lanzada":false,"segs":[[0,1.79,48,45],[1.79,3.418,49.9,47]]},{"id":"TC4","lanzada":false,"segs":[[0,0.95,40,39],[0.95,2.1,48,45],[2.1,2.5,35,33],[2.5,6.9,43,40],[6.9,8.443,41,39]]},{"id":"TC5","lanzada":false,"segs":[[0,9.182,"TABLAS","TABLAS"]]},{"id":"TC6","lanzada":false,"segs":[[0,1.1,49.9,47],[1.1,3.0,48,45],[3.0,3.925,46,46]]},{"id":"TC7","lanzada":false,"segs":[[0,2.7,49,46],[2.7,3.7,36,34],[3.7,4.55,39,36],[4.55,5.25,32,32],[5.25,8.616,46,43]]},{"id":"TC8","lanzada":false,"segs":[[0,0.4,33,33],[0.4,4.5,46,44],[4.5,7.85,48,45],[7.85,10.5,49.5,46],[10.5,12.5,49.9,46],[12.5,15.05,48,45],[15.05,15.6,32,32],[15.6,18.5,46,44],[18.5,20.5,48,45],[20.5,22.019,49.9,46]]},{"id":"TC9","lanzada":false,"segs":[[0,3.5,49,46],[3.5,6.5,46,43],[6.5,7.8,48,45],[7.8,9.75,49.5,46],[9.75,13.4,46,43],[13.4,16.4,49.9,47],[16.4,17.4,48,45],[17.4,19.235,46,43]]},{"id":"TC10","lanzada":true,"segs":[[0,0.5,40,39],[0.5,2.0,46,43],[2.0,3.0,42,40],[3.0,5.7,48,45],[5.7,7.8,49.9,47],[7.8,8.35,47,44],[8.35,9.55,38,35],[9.55,11.0,40,38],[11.0,12.0,38,36],[12.0,13.083,43,41],[13.083,15.691,49.9,46]]},{"id":"TC11","lanzada":false,"segs":[[0,"HITO 4",49.9,47],["HITO 4","HITO 5",48,46],["HITO 5","SEÑAL 40",49,46],["SEÑAL 40",13.12,49.9,47]]},{"id":"TC12","lanzada":false,"segs":[[0,0.65,30,30],[0.65,2.4,40,36],[2.4,3.6,47,45],[3.6,5.38,42,40],[5.38,6.7,48,45],[6.7,"11,0XX",49.9,47],["11,0XX",17.148,"HITOS","HITOS"]]},{"id":"TC13","lanzada":false,"segs":[[0,15.91,"TABLAS","TABLAS"]]},{"id":"TC14","lanzada":true,"segs":[[0,4.75,46,44],[4.75,5.55,30,30],[5.55,9.1,45,43],[9.1,11.85,49,46],[11.85,16.005,48,45]]},{"id":"TC15","lanzada":false,"segs":[[0,0.88,38,38],[0.88,4.2,49,46],[4.2,4.9,34,34],[4.9,9.847,49.5,46]]},{"id":"TC16","lanzada":false,"segs":[[0,2.85,40,40],[2.85,5.8,42,42],[5.8,11.9,44,42],[11.9,13.9,46,44],[13.9,15.9,47,45],[15.9,18.6,44,42],[18.6,21.976,49.9,46]]}];
+const DEFAULT_NOTES = {
+  TC5: 'Media por TABLAS: la organización las entrega aparte. Introdúcelas aquí (Editar) antes del tramo.',
+  TC10: 'Salida lanzada.',
+  TC11: 'Cambios de media en HITO 4, HITO 5 y SEÑAL 40. Si conoces sus km, ponlos aquí; si no, toca "Paso por…" en carrera al pasar.',
+  TC12: 'Cambio en 11,0XX (km exacto no publicado; la tabla oficial sigue a 49,9 hasta 11,300). Desde ahí, medias por HITOS según el libro de ruta.',
+  TC13: 'Media por TABLAS: la organización las entrega aparte. Introdúcelas aquí (Editar) antes del tramo.',
+  TC14: 'Salida lanzada.'
+};
+
+/* ============================ utilidades ============================ */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const clone = (o) => JSON.parse(JSON.stringify(o));
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('pn26.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('pn26.' + k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem('pn26.' + k); } catch (e) {} }
+};
+function parseNum(s) {
+  if (s == null) return null;
+  s = String(s).trim().replace(/\s/g, '').replace(',', '.');
+  if (s === '') return null;
+  const n = Number(s);
+  return isFinite(n) ? n : null;
+}
+const fmtKm = (d) => (d == null || !isFinite(d)) ? '—' : (d < 0 ? '−' : '') + Math.abs(d).toFixed(3).replace('.', ',');
+const fmtV = (v) => v == null ? '—' : String(Math.round(v * 100) / 100).replace('.', ',');
+function fmtT(sec, dec = 1) {
+  if (sec == null || !isFinite(sec)) return '—';
+  const neg = sec < 0; const p = Math.pow(10, dec);
+  let s = Math.round(Math.abs(sec) * p) / p;
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s - h * 3600 - m * 60;
+  const secStr = dec ? ss.toFixed(dec).padStart(3 + dec, '0').replace('.', ',') : String(Math.round(ss)).padStart(2, '0');
+  return (neg ? '−' : '') + (h ? h + ':' + String(m).padStart(2, '0') : String(m)) + ':' + secStr;
+}
+function fmtClock(ms, dec = 0) {
+  const d = new Date(ms);
+  let s = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ':' + String(d.getSeconds()).padStart(2, '0');
+  if (dec) s += ',' + Math.floor(d.getMilliseconds() / 100);
+  return s;
+}
+function fmtDiff(d) { if (d == null || !isFinite(d)) return '—'; return (d > 0 ? '+' : d < 0 ? '−' : '±') + Math.abs(d).toFixed(1).replace('.', ',') + ' s'; }
+function diffClass(d) { return d == null ? '' : Math.abs(d) < 0.3 ? 'ok' : d > 0 ? 'late' : 'early'; }
+function diffWord(d) { return d == null ? '' : Math.abs(d) < 0.3 ? 'EN TIEMPO' : d > 0 ? 'RETRASO' : 'ADELANTO'; }
+function parseClock(s) { // "10:31" / "103100" -> segundos del día
+  if (!s) return null;
+  const digits = String(s).replace(/\D/g, '');
+  if (!digits) return null;
+  const p = (digits + '000000').slice(0, 6);
+  const h = +p.slice(0, 2), m = +p.slice(2, 4), sec = +p.slice(4, 6);
+  if (h > 23 || m > 59 || sec > 59) return null;
+  return h * 3600 + m * 60 + sec;
+}
+const secToClock = (x) => [Math.floor(x / 3600), Math.floor(x % 3600 / 60), x % 60].map((n) => String(n).padStart(2, '0')).join(':');
+function parseTimeSpan(s) { // "4:11,7" -> segundos
+  if (!s) return null;
+  const parts = String(s).replace(',', '.').split(':').map(Number);
+  if (parts.some((n) => !isFinite(n))) return null;
+  return parts.reduce((a, n) => a * 60 + n, 0);
+}
+
+/* ============================ estado ============================ */
+const DEF_S = { cond: 'seco', theme: 'auto', beep: true, voice: true, wake: true, lead: 10, refBeep: 0, refStep: 0.1, calib: 1, gpsOn: false, gpsSync: true, gpsFactor: 1, offsetMs: 0, tblStep: 0.2, tblFollow: true };
+const S = Object.assign({}, DEF_S, store.get('settings', {}));
+const saveS = () => store.set('settings', S);
+
+function normTramo(t) {
+  return {
+    id: t.id, lanzada: !!t.lanzada,
+    segs: t.segs.map((s) => ({
+      h: typeof s[1] === 'number' ? s[1] : null,
+      hl: typeof s[1] === 'string' ? s[1] : null,
+      vs: typeof s[2] === 'number' ? s[2] : null,
+      vl: typeof s[3] === 'number' ? s[3] : null,
+      n: typeof s[2] === 'string' ? s[2] : (typeof s[3] === 'string' ? s[3] : null)
+    }))
+  };
+}
+const OFFICIAL_T = OFFICIAL.map(normTramo);
+let tramos = store.get('tramos', null);
+if (!Array.isArray(tramos) || tramos.length !== OFFICIAL_T.length) tramos = clone(OFFICIAL_T);
+const saveTramos = () => store.set('tramos', tramos);
+const salidas = store.get('salidas', {});        // id -> "HH:MM:SS"
+const notas = Object.assign({}, DEFAULT_NOTES, store.get('notas', {}));
+let logArr = store.get('log', []);
+let sel = Math.min(Math.max(0, store.get('sel', 0)), tramos.length - 1);
+
+const EMPTY_RUN = () => ({ state: 'idle', tc: sel, armedAt: null, startAt: null, manual: {}, marks: [], gpsKm: 0 });
+let run = Object.assign(EMPTY_RUN(), store.get('run', {}));
+if (run.state !== 'idle') sel = run.tc;
+const saveRun = () => store.set('run', run);
+
+const now = () => Date.now() + (S.offsetMs || 0);
+const isEdited = (i) => JSON.stringify(tramos[i]) !== JSON.stringify(OFFICIAL_T[i]);
+
+/* ============================ modelo ============================ */
+// Segmentos resueltos: a/b km (null = desconocido), v media según condición.
+function buildModel(tr, cond, manual) {
+  const out = []; let a = 0;
+  tr.segs.forEach((s, i) => {
+    const b = s.h != null ? s.h : (manual && manual[i] != null ? manual[i] : null);
+    const v = cond === 'lluvia' ? s.vl : s.vs;
+    const aLabel = i > 0 ? tr.segs[i - 1].hl : null;
+    out.push({ i, a, b, v, bLabel: s.hl, aLabel, note: s.n, manualEnd: s.h == null && i < tr.segs.length - 1 });
+    a = b; // null si desconocido
+  });
+  return out;
+}
+const lengthOf = (m) => m.length ? m[m.length - 1].b : null;
+const openSeg = (m) => m.find((s) => s.manualEnd && s.b == null) || null; // punto sin km aún no pasado
+const ap = (m) => openSeg(m) ? '≈ ' : '';
+
+function idealDist(m, t) {
+  let acc = 0;
+  for (const s of m) {
+    if (s.a == null) return { d: null, idx: s.i, stuck: true };
+    if (s.v == null) return { d: s.a, idx: s.i, stuck: true, noMedia: true, t0: acc };
+    const b = s.b == null ? Infinity : s.b;
+    const dur = (b - s.a) / s.v * 3600;
+    if (t < acc + dur) return { d: s.a + (t - acc) * s.v / 3600, idx: s.i, t0: acc, t1: acc + dur };
+    acc += dur;
+  }
+  const last = m[m.length - 1];
+  return { d: last.b, idx: last.i, done: true, over: t - acc, t0: acc };
+}
+function idealTime(m, d) {
+  if (d == null) return null;
+  let acc = 0;
+  for (const s of m) {
+    if (s.a == null || s.v == null) return null;
+    const b = s.b == null ? Infinity : s.b;
+    if (d <= b) return acc + (d - s.a) / s.v * 3600;
+    acc += (b - s.a) / s.v * 3600;
+  }
+  const last = m[m.length - 1];
+  return last.v ? acc + (d - last.b) / last.v * 3600 : null;
+}
+function segIndexAt(m, d) {
+  for (const s of m) { const b = s.b == null ? Infinity : s.b; if (s.a == null || d < b) return s.i; }
+  return m[m.length - 1].i;
+}
+function tramoIssues(tr, cond) {
+  const iss = [];
+  tr.segs.forEach((s, i) => {
+    const v = cond === 'lluvia' ? s.vl : s.vs;
+    if (v == null) iss.push(s.n || 'sin media');
+    if (s.h == null && i < tr.segs.length - 1) iss.push((s.hl || 'punto') + ' sin km');
+  });
+  return iss;
+}
+const curModel = () => buildModel(tramos[sel], S.cond, run.state !== 'idle' ? run.manual : null);
+
+/* ============================ audio / voz ============================ */
+let ac = null, voiceUnlocked = false, esVoice = null;
+function ensureAudio() {
+  try {
+    if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+    if (ac.state === 'suspended') ac.resume();
+  } catch (e) {}
+  if (!voiceUnlocked && window.speechSynthesis) {
+    voiceUnlocked = true;
+    try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } catch (e) {}
+  }
+  if (S.wake) keepAwake(true);
+}
+function pickVoice() {
+  try {
+    const vs = speechSynthesis.getVoices();
+    esVoice = vs.find((v) => v.lang === 'es-ES') || vs.find((v) => v.lang && v.lang.startsWith('es')) || null;
+  } catch (e) {}
+}
+if (window.speechSynthesis) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+document.addEventListener('touchstart', ensureAudio, { passive: true });
+document.addEventListener('mousedown', ensureAudio);
+
+function beep(f = 1000, d = 0.12, vol = 0.5, type = 'square') {
+  if (!S.beep || !ac) return;
+  try {
+    const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.value = f;
+    g.gain.setValueAtTime(vol, t); g.gain.setValueAtTime(vol, t + d * 0.7);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + d + 0.03);
+  } catch (e) {}
+}
+function say(txt) {
+  if (!S.voice || !window.speechSynthesis) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(txt);
+    u.lang = 'es-ES'; u.rate = 1.08; if (esVoice) u.voice = esVoice;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+const spoken = (v) => v == null ? 'sin media' : String(v).replace('.', ',');
+
+/* ============================ pantalla encendida ============================ */
+let wl = null;
+async function keepAwake(on) {
+  try {
+    if (on && 'wakeLock' in navigator && !wl && document.visibilityState === 'visible') {
+      wl = await navigator.wakeLock.request('screen');
+      wl.addEventListener('release', () => { wl = null; });
+    } else if (!on && wl) { await wl.release(); wl = null; }
+  } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.wake) keepAwake(true); });
+
+/* ============================ GPS ============================ */
+const gps = { watch: null, last: null, acc: null, speed: null, fixAt: 0, err: null };
+function haversine(p, q) {
+  const R = 6371000, r = Math.PI / 180;
+  const dLat = (q.lat - p.lat) * r, dLon = (q.lon - p.lon) * r;
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(p.lat * r) * Math.cos(q.lat * r) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(x));
+}
+function gpsStart() {
+  if (gps.watch != null) return;
+  if (!navigator.geolocation) { gps.err = 'Este dispositivo no ofrece geolocalización.'; return; }
+  gps.watch = navigator.geolocation.watchPosition(onPos, (e) => { gps.err = e.message || 'Error de GPS'; }, { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
+}
+function gpsStop() { if (gps.watch != null) navigator.geolocation.clearWatch(gps.watch); gps.watch = null; gps.last = null; }
+let gpsSaveAt = 0;
+function onPos(p) {
+  const c = p.coords; gps.err = null; gps.acc = c.accuracy; gps.fixAt = Date.now();
+  const pt = { lat: c.latitude, lon: c.longitude, t: p.timestamp };
+  let spd = (c.speed != null && c.speed >= 0) ? c.speed * 3.6 : null;
+  if (c.accuracy > 35) { gps.speed = spd; return; }
+  if (gps.last) {
+    const dm = haversine(gps.last, pt), dt = (pt.t - gps.last.t) / 1000;
+    if (spd == null && dt > 0) spd = dm / dt * 3.6;
+    if (dm >= Math.max(4, c.accuracy * 0.3)) {
+      if (dt > 0 && dm / dt < 55) { if (run.state === 'running') run.gpsKm += dm / 1000; }
+      gps.last = pt;
+    }
+  } else gps.last = pt;
+  gps.speed = spd;
+  if (run.state === 'running' && Date.now() - gpsSaveAt > 3000) { gpsSaveAt = Date.now(); saveRun(); }
+}
+const gpsValid = () => S.gpsOn && gps.fixAt && Date.now() - gps.fixAt < 6000 && gps.acc != null && gps.acc <= 35;
+const gpsKm = () => run.gpsKm * (S.gpsFactor || 1);
+
+/* ============================ eventos sonoros ============================ */
+let events = [], lastEl = null, lastRem = null;
+function buildEvents() {
+  const m = curModel(); const ev = [];
+  for (let k = 1; k < m.length; k++) {
+    const a = m[k].a; if (a == null) continue;
+    const t = idealTime(m, a); if (t == null) continue;
+    const v = m[k].v;
+    ev.push({ t: t - S.lead, type: 'pre', v });
+    [3, 2, 1].forEach((s) => ev.push({ t: t - s, type: 'cd' }));
+    ev.push({ t, type: 'chg', v });
+  }
+  const L = lengthOf(m), T = idealTime(m, L);
+  if (T != null) { ev.push({ t: T - S.lead, type: 'preEnd' }); [3, 2, 1].forEach((s) => ev.push({ t: T - s, type: 'cd' })); ev.push({ t: T, type: 'end' }); }
+  if (S.refBeep > 0 && L != null) {
+    const changes = m.slice(1).map((s) => s.a).filter((x) => x != null);
+    for (let k = 1; k * S.refBeep < L - 1e-6; k++) {
+      const km = Math.round(k * S.refBeep * 1000) / 1000;
+      if (changes.some((c) => Math.abs(c - km) < 0.03)) continue;
+      const t = idealTime(m, km); if (t != null) ev.push({ t, type: 'ref' });
+    }
+  }
+  events = ev.sort((x, y) => x.t - y.t);
+}
+function fireEvent(e) {
+  switch (e.type) {
+    case 'pre': beep(1300, 0.1); setTimeout(() => beep(1300, 0.1), 160); say(`Cambio a ${spoken(e.v)} en ${S.lead} segundos`); break;
+    case 'preEnd': beep(1300, 0.1); setTimeout(() => beep(1300, 0.1), 160); say(`Final en ${S.lead} segundos`); break;
+    case 'cd': beep(1000, 0.09); break;
+    case 'chg': beep(1700, 0.45); say(e.v == null ? 'Cambio de media' : spoken(e.v)); flashNext(); break;
+    case 'end': beep(1700, 0.8); say('Fin del tramo'); break;
+    case 'ref': beep(700, 0.05, 0.25, 'sine'); break;
+  }
+}
+
+/* ============================ acciones de carrera ============================ */
+function selectTc(i) {
+  if (run.state !== 'idle') { toast('Termina o cancela el tramo en curso para cambiar.'); return; }
+  sel = i; run.tc = i; store.set('sel', sel); saveRun();
+  renderAll();
+}
+function armAt(secOfDay) {
+  const base = new Date(now()); base.setHours(0, 0, 0, 0);
+  let at = base.getTime() + secOfDay * 1000;
+  if (at < now() - 1000) { toast('Esa hora ya ha pasado.'); return; }
+  run = Object.assign(EMPTY_RUN(), { state: 'armed', tc: sel, armedAt: at });
+  lastRem = null; saveRun(); renderAll();
+  say(`${tramos[sel].id} armado. Salida a las ${secToClock(secOfDay).slice(0, 5)}`);
+}
+function startNow(at) {
+  run.state = 'running'; run.tc = sel; run.startAt = at != null ? at : now();
+  run.manual = {}; run.marks = []; run.gpsKm = 0; gps.last = null;
+  if (S.gpsOn) gpsStart();
+  saveRun(); buildEvents(); lastEl = (now() - run.startAt) / 1000;
+  beep(1700, 0.7); say('Salida');
+  if (S.wake) keepAwake(true);
+  renderAll();
+}
+function cancelRun() {
+  run = Object.assign(EMPTY_RUN(), { tc: sel }); saveRun(); renderAll();
+}
+function finishRun() {
+  const m = curModel(); const end = now();
+  logArr.unshift({
+    id: end, tc: tramos[sel].id, cond: S.cond, startAt: run.startAt, endAt: end,
+    ideal: idealTime(m, lengthOf(m)), marks: run.marks, manual: run.manual
+  });
+  store.set('log', logArr);
+  const next = Math.min(sel + 1, tramos.length - 1);
+  run = Object.assign(EMPTY_RUN(), { tc: next }); sel = next; store.set('sel', sel);
+  saveRun(); renderAll(); toast('Tramo guardado en el registro.');
+}
+function adjustStart(ms) {
+  if (run.state === 'running') { run.startAt -= ms; lastEl = (now() - run.startAt) / 1000; }
+  else if (run.state === 'armed') run.armedAt += ms;
+  saveRun(); renderAll();
+}
+function passLandmark(i) {
+  const m = curModel(); const el = (now() - run.startAt) / 1000;
+  const pos = gpsValid() ? gpsKm() : idealDist(m, el).d;
+  if (pos == null) return;
+  run.manual[i] = Math.round(pos * 1000) / 1000;
+  saveRun(); buildEvents(); lastEl = el; beep(1700, 0.3);
+  const lbl = tramos[sel].segs[i].hl || 'referencia';
+  toast(`Paso por ${lbl} en ${fmtKm(pos)} km`, 'Corregir', () => openKeypad({
+    title: `Lectura del tripmaster en ${lbl}`, mode: 'km', sub: `registrado ${fmtKm(pos)}`,
+    quick: [{ label: `Deshacer paso por ${lbl}`, fn: () => { delete run.manual[i]; saveRun(); buildEvents(); lastEl = (now() - run.startAt) / 1000; renderAll(); } }],
+    onOk: (v) => { run.manual[i] = Math.round(v * (S.calib || 1) * 1000) / 1000; saveRun(); buildEvents(); lastEl = (now() - run.startAt) / 1000; renderAll(); }
+  }));
+  renderAll();
+}
+function recordMark(elapsed, reading, src, gpsAtCapture) {
+  const m = curModel();
+  const km = reading * (S.calib || 1);
+  const it = idealTime(m, km);
+  if (it == null) { toast('No se puede calcular: falta la media en ese punto.'); return; }
+  const diff = elapsed - it;
+  run.marks.push({ e: elapsed, r: reading, km, diff, src });
+  if (S.gpsOn && S.gpsSync && gpsAtCapture != null) run.gpsKm += km / (S.gpsFactor || 1) - gpsAtCapture;
+  saveRun();
+  const c = diffClass(diff);
+  beep(c === 'ok' ? 1500 : 900, 0.12);
+  renderAll();
+}
+function refTarget(pos) {
+  const st = S.refStep || 0.1;
+  return Math.round(Math.ceil((pos + st * 0.5) / st) * st * 1000) / 1000;
+}
+
+/* ============================ cálculos en vivo ============================ */
+function computeLive() {
+  const tr = tramos[sel], m = curModel(), L = lengthOf(m);
+  const o = { tr, m, L, total: idealTime(m, L) };
+  if (run.state === 'running') {
+    const el = (now() - run.startAt) / 1000; o.el = el;
+    const id = idealDist(m, el); o.id = id; o.idealKm = id.d;
+    o.gpsKm = gpsValid() ? gpsKm() : null;
+    o.pos = o.gpsKm != null ? o.gpsKm : o.idealKm;
+    let ci = id.stuck ? id.idx : (o.pos != null ? segIndexAt(m, o.pos) : id.idx);
+    if (id.done && o.gpsKm == null) ci = m.length - 1;
+    o.ci = ci;
+    o.remain = o.total != null ? o.total - el : null;
+    o.gpsDiff = o.gpsKm != null ? (idealTime(m, o.gpsKm) != null ? el - idealTime(m, o.gpsKm) : null) : null;
+  } else { o.ci = 0; o.el = 0; o.idealKm = 0; o.pos = 0; o.id = idealDist(m, 0); }
+  o.seg = m[o.ci]; o.next = m[o.ci + 1] || null;
+  if (o.next) {
+    o.nextKm = o.seg.b;
+    o.nextDist = (o.nextKm != null && o.pos != null) ? o.nextKm - o.pos : null;
+    const tc = idealTime(m, o.nextKm);
+    o.nextIn = tc != null ? tc - o.el : null;
+    const t0 = idealTime(m, o.seg.a);
+    o.frac = (o.seg.a != null && o.seg.b != null && o.pos != null) ? (o.pos - o.seg.a) / (o.seg.b - o.seg.a) : null;
+  } else if (L != null && o.pos != null) {
+    o.endDist = L - o.pos; o.frac = o.seg.a != null ? (o.pos - o.seg.a) / (L - o.seg.a) : null;
+  }
+  return o;
+}
+
+/* ============================ render ============================ */
+const setT = (el, t) => { if (el && el.textContent !== t) el.textContent = t; };
+const setH = (el, h) => { if (el && el._h !== h) { el._h = h; el.innerHTML = h; } };
+
+const darkMQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+const effTheme = () => S.theme === 'auto' ? (darkMQ && darkMQ.matches ? 'dark' : 'light') : S.theme;
+const ICON_SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>';
+const ICON_MOON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/></svg>';
+function applyTheme() {
+  if (S.theme === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', S.theme);
+  const t = effTheme();
+  // el botón muestra el modo actual
+  setH($('#themeBtn'), t === 'light' ? ICON_SUN + 'CLARO' : t === 'red' ? ICON_MOON + 'ROJO' : ICON_MOON + 'OSCURO');
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', t === 'light' ? '#ffffff' : t === 'red' ? '#000000' : '#0b0d10');
+}
+if (darkMQ && darkMQ.addEventListener) darkMQ.addEventListener('change', () => { if (S.theme === 'auto') applyTheme(); });
+function renderSegs() {
+  $$('#condSeg button').forEach((b) => b.classList.toggle('on', b.dataset.v === S.cond));
+  const segMap = { leadSeg: S.lead, refBeepSeg: S.refBeep, refStepSeg: S.refStep, themeSeg: S.theme, tblStep: S.tblStep };
+  for (const id in segMap) $$('#' + id + ' button').forEach((b) => b.classList.toggle('on', String(b.dataset.v) === String(segMap[id])));
+  $$('.tog').forEach((t) => t.classList.toggle('on', !!S[t.dataset.set]));
+  $('#tblFollow').classList.toggle('acc', !!S.tblFollow);
+}
+function renderTcBar() {
+  const doneIds = new Set(logArr.map((l) => l.tc));
+  setH($('#tcbar'), tramos.map((t, i) => {
+    const iss = tramoIssues(t, S.cond).length;
+    const dot = iss ? '<i class="dot w"></i>' : doneIds.has(t.id) ? '<i class="dot d"></i>' : '';
+    return `<button data-i="${i}" class="${i === sel ? 'on' : ''}">${t.id}${dot}</button>`;
+  }).join(''));
+}
+function renderStartCard() {
+  const tr = tramos[sel], m = curModel(), T = idealTime(m, lengthOf(m));
+  const card = $('#startCard'); const st = run.state;
+  const planned = salidas[tr.id] || store.get('lastStart', '');
+  let h = '';
+  if (st === 'idle') {
+    h = `<div class="lbl">Salida ${esc(tr.id)} ${tr.lanzada ? '<span class="badge acc">Lanzada</span>' : ''}</div>
+      <div style="margin:10px 0"><button class="timebtn num" id="btnStartTime"><small>HORA DE SALIDA</small>${esc(planned || '--:--:--')}</button></div>
+      <div class="row"><button class="btn acc big" id="btnArm">ARMAR</button><button class="btn go big" id="btnGo">SALIDA YA</button></div>
+      <p class="note" style="margin:10px 0 0">Armado: cuenta atrás con pitidos y arranca solo a la hora exacta. ${T != null ? 'Tiempo ideal: <b>' + fmtT(T, 1) + '</b>' : ''}</p>`;
+  } else if (st === 'armed') {
+    h = `<div class="lbl">Salida ${esc(tr.id)} a las ${fmtClock(run.armedAt)}</div>
+      <div class="countdown num" id="cdVal">--</div>
+      <div class="row">
+        <button class="btn sm" data-adj="-60000">−1 min</button><button class="btn sm" data-adj="60000">+1 min</button>
+        <button class="btn sm" data-adj="-1000">−1 s</button><button class="btn sm" data-adj="1000">+1 s</button>
+      </div>
+      <div class="row" style="margin-top:8px"><button class="btn" id="btnCancel">Cancelar</button><button class="btn go" id="btnGo">SALIDA YA</button></div>`;
+  } else {
+    h = `<div class="lbl">En tramo ${esc(tr.id)} <span class="badge ${S.cond === 'lluvia' ? 'blue' : 'acc'}">${S.cond}</span></div>
+      <div class="row" style="justify-content:space-between;margin:6px 0 8px">
+        <div class="sub num">Salida ${fmtClock(run.startAt)}${T != null ? ' · Llegada ideal <b style="color:var(--text)">' + ap(m) + fmtClock(run.startAt + T * 1000) + '</b>' : ''}</div>
+      </div>
+      <div class="row">
+        <button class="btn sm" data-adj="-1000">−1 s</button><button class="btn sm" data-adj="-100">−0,1</button>
+        <button class="btn sm" data-adj="100">+0,1</button><button class="btn sm" data-adj="1000">+1 s</button>
+      </div>
+      <div class="row" style="margin-top:8px"><button class="btn blue" id="btnPilot">PANTALLA PILOTO</button><button class="btn danger" id="btnFinish">TERMINAR</button></div>
+      <p class="note" style="margin:8px 0 0">Ajuste: +0,1 adelanta el crono (si saliste tarde).</p>`;
+  }
+  setH(card, h);
+}
+function renderUpcoming(o) {
+  const m = o.m; const items = [];
+  const start = run.state === 'running' ? o.ci + 1 : 1;
+  for (let k = start; k < m.length && items.length < 5; k++) {
+    const s = m[k]; const t = idealTime(m, s.a);
+    const where = s.a != null ? fmtKm(s.a) : esc(s.aLabel || '?');
+    let when = '';
+    if (t != null) when = run.state === 'running' ? 'en ' + fmtT(t - o.el, 0) : fmtT(t, 0);
+    else when = s.a == null ? 'manual' : '';
+    items.push(`<li><span class="num">${where}</span><span class="v num">${s.v != null ? fmtV(s.v) : esc(s.note || '—')}</span><span class="t num">${when}</span></li>`);
+  }
+  if (o.L != null) {
+    const t = o.total;
+    items.push(`<li><span class="num">${fmtKm(o.L)}</span><span class="v">META</span><span class="t num">${t != null ? ap(m) + (run.state === 'running' ? 'en ' + fmtT(t - o.el, 0) : fmtT(t, 0)) : ''}</span></li>`);
+  }
+  setH($('#upList'), items.join(''));
+}
+let flashUntil = 0;
+function flashNext() { flashUntil = Date.now() + 2500; }
+
+function renderLive() {
+  const o = computeLive(); const running = run.state === 'running';
+  const tr = o.tr, seg = o.seg;
+  // media actual
+  setT($('#segInfo'), `MEDIA · ${tr.id} · tramo ${o.ci + 1}/${o.m.length}`);
+  setT($('#mediaNow'), seg.v != null ? fmtV(seg.v) : (seg.note || '—'));
+  $('#mediaNow').classList.toggle('txt', seg.v == null);
+  $('#pMedia').classList.toggle('txt', seg.v == null);
+  $('#nextV').classList.toggle('txt', !o.next || o.next.v == null);
+  const a = seg.a != null ? fmtKm(seg.a) : (seg.aLabel || '?'), b = seg.b != null ? fmtKm(seg.b) : (seg.bLabel || '?');
+  setT($('#segRange'), `${a} → ${b} km`);
+  setH($('#mediaTags'), (tr.lanzada ? '<span class="badge acc">Lanzada</span>' : '') + `<span class="badge ${S.cond === 'lluvia' ? 'blue' : ''}">${S.cond}</span>`);
+  const gs = $('#gpsSpeed');
+  if (S.gpsOn && gps.speed != null && gpsValid()) { gs.classList.remove('hidden'); setT(gs, `GPS ${Math.round(gps.speed)} km/h`); gs.style.color = seg.v != null && gps.speed > seg.v + 3 ? 'var(--late)' : ''; }
+  else gs.classList.add('hidden');
+  const warn = $('#mediaWarn'); const iss = tramoIssues(tr, S.cond);
+  if (seg.v == null) { warn.classList.remove('hidden'); setT(warn, `${seg.note || 'Sin media'}: este tramo no tiene media definida. Introdúcela en Tramos → Editar (o sigue el libro de ruta).`); }
+  else if (!running && iss.length) { warn.classList.remove('hidden'); setT(warn, 'Atención: ' + iss.join(' · ')); }
+  else warn.classList.add('hidden');
+
+  // próximo cambio
+  const nc = $('#nextCard'), hb = $('#btnHito');
+  if (o.next) {
+    setT($('#nextV'), o.next.v != null ? fmtV(o.next.v) : (o.next.note || '—'));
+    setT($('#nextDist'), o.nextDist != null ? `en ${fmtKm(Math.max(0, o.nextDist))} km` : `en ${seg.bLabel || '?'}`);
+    setT($('#nextTime'), o.nextKm != null ? `${fmtKm(o.nextKm)} km · ` + (o.nextIn != null ? (running ? fmtT(Math.max(0, o.nextIn), 1) : 'a ' + fmtT(o.nextIn, 0)) : '') : 'punto sin km: toca al pasar');
+    $('#nextBar').style.width = o.frac != null ? Math.min(100, Math.max(0, o.frac * 100)) + '%' : '0%';
+    const alert = running && ((o.nextIn != null && o.nextIn <= S.lead && o.nextIn > -0.5) || Date.now() < flashUntil);
+    nc.classList.toggle('alert', alert);
+    if (running && seg.manualEnd && seg.b == null) { hb.classList.remove('hidden'); setT(hb, `PASO POR ${seg.bLabel || 'REFERENCIA'}`); hb.dataset.i = seg.i; }
+    else hb.classList.add('hidden');
+  } else {
+    setT($('#nextV'), 'META');
+    setT($('#nextDist'), o.endDist != null ? `en ${fmtKm(Math.max(0, o.endDist))} km` : '');
+    setT($('#nextTime'), running && o.remain != null ? (o.remain > 0 ? fmtT(o.remain, 1) : 'tramo terminado (ideal)') : '');
+    $('#nextBar').style.width = o.frac != null ? Math.min(100, Math.max(0, o.frac * 100)) + '%' : '0%';
+    nc.classList.toggle('alert', running && o.remain != null && o.remain <= S.lead && o.remain > -2);
+    hb.classList.add('hidden');
+  }
+
+  // estadísticas
+  setT($('#kmIdeal'), fmtKm(o.idealKm != null ? Math.min(o.idealKm, o.L ?? Infinity) : null));
+  setT($('#kmGps'), running && o.gpsKm != null ? `GPS ${fmtKm(o.gpsKm)}` : (running && o.id && o.id.stuck ? 'sin media' : `de ${fmtKm(o.L)} km`));
+  setT($('#chrono'), fmtT(o.el, 1));
+  setT($('#chronoSub'), running ? 'desde ' + fmtClock(run.startAt) : (run.state === 'armed' ? 'armado' : 'parado'));
+  const apx = ap(o.m);
+  setT($('#remain'), o.remain != null ? apx + fmtT(o.remain, 0) : (o.total != null ? apx + fmtT(o.total, 0) : '—'));
+  setT($('#eta'), running && o.total != null ? 'llegada ' + apx + fmtClock(run.startAt + o.total * 1000) : (o.total != null ? (apx ? 'aprox. (hitos sin km)' : 'tiempo ideal') : 'faltan datos'));
+
+  // comprobación
+  const refBtn = $('#btnRef');
+  const target = running && o.pos != null ? refTarget(o.pos) : refTarget(0);
+  refBtn.dataset.km = target; setT($('#refKm'), fmtKm(target));
+  refBtn.disabled = !running; $('#btnMark').disabled = !running;
+  refBtn.style.opacity = running ? 1 : .45; $('#btnMark').style.opacity = running ? 1 : .45;
+  const lastM = run.marks[run.marks.length - 1];
+  const dv = $('#diffVal');
+  if (lastM && running) {
+    setT(dv, fmtDiff(lastM.diff)); dv.className = 'diff num ' + diffClass(lastM.diff);
+    const lb = $('#diffLbl'); setT(lb, `${diffWord(lastM.diff)} · ${fmtKm(lastM.r)} km`); lb.style.color = `var(--${diffClass(lastM.diff) === 'ok' ? 'ok' : diffClass(lastM.diff)})`;
+    // velocidad para recuperar en 500 m
+    const v = seg.v; const Lr = 0.5;
+    if (v && Math.abs(lastM.diff) >= 0.3) {
+      const need = Lr / v * 3600 - lastM.diff;
+      const sp = need > 0 ? Lr / (need / 3600) : null;
+      setH($('#recover'), sp ? `Para corregir en 500 m<br><b style="font-size:26px;color:${sp > 50 ? 'var(--late)' : 'var(--text)'}">${fmtV(Math.round(sp * 10) / 10)} km/h</b>` : '');
+    } else setH($('#recover'), '');
+    setH($('#marksList'), run.marks.slice(-4).reverse().map((mk) => `${fmtT(mk.e, 1)} · <b>${fmtKm(mk.r)}</b> km → <b style="color:var(--${diffClass(mk.diff)})">${fmtDiff(mk.diff)}</b>`).join('<br>'));
+  } else {
+    setT(dv, '—'); dv.className = 'diff num'; setT($('#diffLbl'), running ? 'TOCA AL PASAR LA REFERENCIA' : 'SIN MARCAS'); $('#diffLbl').style.color = '';
+    setH($('#recover'), ''); setH($('#marksList'), '');
+  }
+  const gl = $('#gpsLive');
+  if (S.gpsOn) {
+    gl.classList.remove('hidden');
+    setT($('#gpsInfo'), gps.err ? gps.err : gps.acc != null ? `±${Math.round(gps.acc)} m${gpsValid() ? '' : ' (sin precisión)'}` : 'buscando…');
+    const gd = $('#gpsDiff');
+    if (running && o.gpsDiff != null) { setT(gd, fmtDiff(o.gpsDiff)); gd.className = 'diff num ' + diffClass(o.gpsDiff); setT($('#gpsDiffLbl'), diffWord(o.gpsDiff)); }
+    else { setT(gd, '—'); gd.className = 'diff num'; setT($('#gpsDiffLbl'), ''); }
+  } else gl.classList.add('hidden');
+
+  renderUpcoming(o);
+
+  // pantalla piloto
+  if (!$('#pilot').classList.contains('hidden')) {
+    setT($('#pTc'), `${tr.id} · MEDIA`);
+    setT($('#pMedia'), seg.v != null ? fmtV(seg.v) : (seg.note || '—'));
+    const pn = $('#pNext');
+    if (o.next) setT(pn, `→ ${o.next.v != null ? fmtV(o.next.v) : (o.next.note || '?')}  ${o.nextIn != null ? 'en ' + fmtT(Math.max(0, o.nextIn), 0) : (seg.bLabel || '')}`);
+    else setT(pn, o.remain != null ? `META en ${fmtT(Math.max(0, o.remain), 0)}` : 'META');
+    pn.classList.toggle('alert', o.nextIn != null && o.nextIn <= S.lead);
+    const d = o.gpsDiff != null ? o.gpsDiff : (lastM ? lastM.diff : null);
+    const pd = $('#pDiff'); setT(pd, d != null ? `${fmtDiff(d)} ${diffWord(d)}` : ''); pd.style.color = d != null ? `var(--${diffClass(d)})` : '';
+  }
+  return o;
+}
+
+/* ---------- tablas ---------- */
+function tableRows(m, step) {
+  const L = lengthOf(m); const rows = new Map();
+  const add = (km, chg) => { const k = Math.round(km * 1000); if (!rows.has(k) || chg) rows.set(k, { km: k / 1000, chg: chg || (rows.get(k) || {}).chg }); };
+  add(0, false);
+  if (L != null) { for (let k = 1; k * step < L - 1e-9; k++) add(k * step, false); add(L, true); }
+  m.forEach((s, i) => { if (i > 0 && s.a != null) add(s.a, true); });
+  const op = openSeg(m);
+  return Array.from(rows.values()).sort((x, y) => x.km - y.km).map((r) => {
+    const t = idealTime(m, r.km); const si = segIndexAt(m, r.km); const s = m[Math.min(si, m.length - 1)];
+    return { ...r, t, v: s ? s.v : null, unc: !!(op && r.km > op.a + 1e-9) };
+  }).filter((r) => r.t != null || r.km === 0);
+}
+function renderTable() {
+  const selEl = $('#tblTc');
+  if (selEl.options.length !== tramos.length) selEl.innerHTML = tramos.map((t, i) => `<option value="${i}">${t.id}</option>`).join('');
+  selEl.value = String(tblSel);
+  const tr = tramos[tblSel];
+  const m = buildModel(tr, S.cond, (run.state !== 'idle' && tblSel === sel) ? run.manual : null);
+  const rows = tableRows(m, S.tblStep);
+  const startMs = (run.state === 'running' && tblSel === sel) ? run.startAt : (run.state === 'armed' && tblSel === sel) ? run.armedAt : (salidas[tr.id] ? (() => { const b = new Date(now()); b.setHours(0, 0, 0, 0); return b.getTime() + parseClock(salidas[tr.id]) * 1000; })() : null);
+  const iss = tramoIssues(tr, S.cond); const op = openSeg(m);
+  setT($('#tblInfo'), `${tr.id} · ${S.cond.toUpperCase()} · ${fmtKm(lengthOf(m))} km · ${ap(m)}${fmtT(idealTime(m, lengthOf(m)), 2)}${iss.length ? ' · ⚠ ' + iss.join(', ') : ''}${op ? ` · * filas en gris: válidas solo hasta ${op.bLabel || 'el punto sin km'}` : ''}`);
+  // repartir en columnas para iPad apaisado
+  const per = 40; const chunks = [];
+  for (let i = 0; i < rows.length; i += per) chunks.push(rows.slice(i, i + per));
+  const html = '<div class="tables-wrap">' + chunks.map((ch) => `<div class="card" style="padding:0;overflow:hidden"><table class="t"><thead><tr><th>Km</th><th>Tiempo</th>${startMs ? '<th>Hora</th>' : ''}<th>Media</th></tr></thead><tbody>${ch.map((r) =>
+    `<tr data-km="${r.km}" class="${r.chg ? 'chg' : ''}${r.unc ? ' unc' : ''}"><td>${fmtKm(r.km)}</td><td>${fmtT(r.t, 2)}${r.unc ? '*' : ''}</td>${startMs ? `<td class="m">${r.t != null ? fmtClock(startMs + r.t * 1000) : ''}</td>` : ''}<td class="m">${fmtV(r.v)}</td></tr>`).join('')}</tbody></table></div>`).join('') + '</div>';
+  setH($('#tblWrap'), html);
+  tblRowsCache = rows;
+}
+let tblSel = sel, tblRowsCache = [], lastCurRow = null;
+function updateTableCursor(o) {
+  if (!$('#tab-tabla').classList.contains('on') || run.state !== 'running' || tblSel !== sel || o.pos == null) return;
+  let idx = -1; for (let i = 0; i < tblRowsCache.length; i++) if (tblRowsCache[i].km <= o.pos + 1e-9) idx = i;
+  if (idx === lastCurRow) return; lastCurRow = idx;
+  $$('#tblWrap tr.cur').forEach((r) => r.classList.remove('cur'));
+  const tr = $$('#tblWrap tbody tr')[idx];
+  if (tr) { tr.classList.add('cur'); if (S.tblFollow) tr.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+}
+
+/* ---------- tramos ---------- */
+const PALETTE = (v) => v == null ? 'var(--line)' : `hsl(${Math.max(0, Math.min(140, (v - 20) * 4.6))} 70% 48%)`;
+function renderTramos() {
+  const doneIds = new Set(logArr.map((l) => l.tc));
+  setH($('#tcGrid'), tramos.map((t, i) => {
+    const m = buildModel(t, S.cond, null), L = lengthOf(m), T = idealTime(m, L);
+    const vs = m.map((s) => s.v).filter((v) => v != null);
+    const iss = tramoIssues(t, S.cond);
+    const known = L || 1;
+    const bars = m.map((s) => { const a = s.a ?? 0; const b = s.b ?? (m[s.i + 1] && m[s.i + 1].b) ?? L; const w = b != null && a != null ? Math.max(1.5, (b - a) / known * 100) : 100 / m.length; return `<i style="width:${w}%;background:${PALETTE(s.v)}" title="${fmtV(s.v)}"></i>`; }).join('');
+    return `<div class="card tc-card"><h3>${t.id}
+      ${t.lanzada ? '<span class="badge acc">Lanzada</span>' : ''}
+      ${iss.length ? '<span class="badge warn">Faltan datos</span>' : '<span class="badge ok">Completo</span>'}
+      ${isEdited(i) ? '<span class="badge">Editado</span>' : ''}
+      ${doneIds.has(t.id) ? '<span class="badge blue">Hecho</span>' : ''}</h3>
+      <div class="mini">${bars}</div>
+      <div class="kv num">
+        <span>Longitud</span><span>${fmtKm(L)} km</span>
+        <span>Cambios de media</span><span>${m.length - 1}</span>
+        <span>Medias (${S.cond})</span><span>${vs.length ? fmtV(Math.min(...vs)) + ' – ' + fmtV(Math.max(...vs)) : '—'}</span>
+        <span>Tiempo ideal</span><span>${T != null ? ap(m) + fmtT(T, 2) : '—'}</span>
+        <span>Salida prevista</span><span>${esc(salidas[t.id] || '—')}</span>
+      </div>
+      ${iss.length ? `<div class="note" style="color:var(--late);font-weight:700">⚠ ${esc(iss.join(' · '))}</div>` : ''}
+      ${notas[t.id] ? `<div class="note" style="margin:6px 0">${esc(notas[t.id])}</div>` : ''}
+      <div class="row" style="margin-top:8px">
+        <button class="btn sm" data-edit="${i}">Editar</button>
+        <button class="btn sm" data-tbl="${i}">Tabla</button>
+        <button class="btn sm acc" data-go="${i}">Ir a carrera</button>
+      </div></div>`;
+  }).join(''));
+}
+
+/* ---------- registro ---------- */
+function renderLog() {
+  setT($('#logInfo'), logArr.length ? `${logArr.length} tramo(s)` : 'Aún no hay tramos registrados. Se guardan al pulsar TERMINAR.');
+  setH($('#logList'), logArr.map((l) => {
+    const dur = (l.endAt - l.startAt) / 1000;
+    const avg = l.marks.length ? l.marks.reduce((a, mk) => a + Math.abs(mk.diff), 0) / l.marks.length : null;
+    return `<div class="card log-item">
+      <div class="row" style="justify-content:space-between"><b style="font-size:22px">${esc(l.tc)} <span class="badge ${l.cond === 'lluvia' ? 'blue' : 'acc'}">${esc(l.cond)}</span></b>
+      <span class="sub num">${new Date(l.startAt).toLocaleDateString('es-ES')} · salida ${fmtClock(l.startAt)} · fin ${fmtClock(l.endAt)}</span></div>
+      <div class="sub num" style="margin-top:4px">Crono ${fmtT(dur, 1)} · ideal ${fmtT(l.ideal, 1)} · ${l.marks.length} marcas${avg != null ? ' · desvío medio ' + avg.toFixed(2).replace('.', ',') + ' s' : ''}</div>
+      ${l.marks.length ? `<table><tr><th>CRONO</th><th>LECTURA</th><th>KM CORR.</th><th>DESVÍO</th></tr>${l.marks.map((mk) => `<tr><td>${fmtT(mk.e, 1)}</td><td>${fmtKm(mk.r)}</td><td>${fmtKm(mk.km)}</td><td style="color:var(--${diffClass(mk.diff)});font-weight:800">${fmtDiff(mk.diff)}</td></tr>`).join('')}</table>` : ''}
+      <div class="row" style="margin-top:8px"><button class="btn sm" data-dellog="${l.id}">Eliminar</button></div>
+    </div>`;
+  }).join(''));
+}
+
+/* ---------- ajustes ---------- */
+function renderSettings() {
+  setT($('#offInfo'), `Corrección actual: ${(S.offsetMs >= 0 ? '+' : '−') + (Math.abs(S.offsetMs) / 1000).toFixed(1).replace('.', ',')} s respecto al reloj del iPad`);
+  setT($('#calInfo'), `Factor de calibración: ${S.calib.toFixed(4).replace('.', ',')} (lectura × factor = km real)`);
+  if (document.activeElement !== $('#gpsFactor')) $('#gpsFactor').value = String(S.gpsFactor).replace('.', ',');
+  setT($('#gpsStatus'), !S.gpsOn ? 'GPS desactivado.' : gps.err ? 'Error: ' + gps.err : gps.acc != null ? `Señal: ±${Math.round(gps.acc)} m · velocidad ${gps.speed != null ? Math.round(gps.speed) + ' km/h' : '—'}` : 'Buscando satélites…');
+}
+function renderAll() {
+  applyTheme(); renderSegs(); renderTcBar(); renderStartCard(); renderLive();
+  if ($('#tab-tabla').classList.contains('on')) { renderTable(); lastCurRow = null; }
+  if ($('#tab-tramos').classList.contains('on')) renderTramos();
+  if ($('#tab-registro').classList.contains('on')) renderLog();
+  if ($('#tab-ajustes').classList.contains('on')) renderSettings();
+}
+
+/* ============================ bucle ============================ */
+function tick() {
+  const t = now();
+  const ck = fmtClock(t, 1); const [hms, dec] = ck.split(',');
+  setH($('#clock'), `${hms}<small>,${dec}</small>`); setT($('#clock2'), ck);
+  if (run.state === 'armed') {
+    const rem = (run.armedAt - t) / 1000;
+    const cd = $('#cdVal'); if (cd) setT(cd, rem > 0 ? '−' + fmtT(rem, 1) : '0:00,0');
+    const r = Math.ceil(rem);
+    if (lastRem != null && r !== lastRem) {
+      if (r === 10) { beep(1100, 0.12); say('Diez segundos'); }
+      else if (r === 30) say('Treinta segundos');
+      else if (r === 60) say('Un minuto');
+      else if (r <= 5 && r >= 1) beep(1100, 0.12);
+    }
+    lastRem = r;
+    if (rem <= 0) { startNow(run.armedAt); return; }
+  }
+  if (run.state === 'running') {
+    const el = (t - run.startAt) / 1000;
+    if (lastEl == null) lastEl = el;
+    if (el > lastEl) { for (const e of events) if (e.t > lastEl && e.t <= el) fireEvent(e); }
+    lastEl = el;
+    const o = renderLive(); updateTableCursor(o);
+  }
+  if ($('#tab-ajustes').classList.contains('on') && S.gpsOn) renderSettings();
+}
+
+/* ============================ teclado numérico ============================ */
+let kp = null;
+function openKeypad(opts) {
+  kp = Object.assign({ raw: '' }, opts);
+  $('#kpTitle').textContent = kp.title || '';
+  $('#kpComma').style.visibility = kp.mode === 'time' ? 'hidden' : 'visible';
+  setH($('#kpQuick'), (kp.quick || []).map((q, i) => `<button class="btn sm" data-q="${i}">${esc(q.label)}</button>`).join(''));
+  kpRender(); $('#keypad').classList.remove('hidden');
+}
+function kpValue() {
+  const r = kp.raw;
+  if (kp.mode === 'time') return parseClock(r);
+  if (!r) return null;
+  if (r.includes(',')) return parseNum(r);
+  return parseInt(r, 10) / 1000; // sin coma: las 3 últimas cifras son decimales
+}
+function kpRender() {
+  const v = kpValue();
+  if (kp.mode === 'time') {
+    const d = (kp.raw + '------').slice(0, 6);
+    $('#kpDisp').textContent = `${d.slice(0, 2)}:${d.slice(2, 4)}:${d.slice(4, 6)}`;
+    $('#kpPrev').textContent = v != null ? 'Salida a las ' + secToClock(v) : (kp.raw ? 'Hora no válida' : 'Teclea HHMM o HHMMSS');
+  } else {
+    $('#kpDisp').textContent = kp.raw || '0';
+    $('#kpPrev').textContent = v != null ? `= ${fmtKm(v)} km${kp.sub ? ' · ' + kp.sub : ''}` : (kp.sub || 'Sin coma: las 3 últimas cifras son metros (3245 = 3,245)');
+  }
+}
+function kpClose() { $('#keypad').classList.add('hidden'); kp = null; }
+$('#keypad').addEventListener('click', (e) => {
+  if (!kp) return;
+  const q = e.target.closest('[data-q]');
+  if (q) { const it = kp.quick[+q.dataset.q]; kpClose(); it.fn(); return; }
+  const b = e.target.closest('[data-k]'); if (!b) { if (e.target.id === 'keypad') kpClose(); return; }
+  const k = b.dataset.k;
+  if (k === 'cancel') { const c = kp.onCancel; kpClose(); if (c) c(); return; }
+  if (k === 'ok') { const v = kpValue(); if (v == null) { beep(300, 0.15); return; } const fn = kp.onOk; kpClose(); fn(v); return; }
+  if (k === 'del') kp.raw = kp.raw.slice(0, -1);
+  else if (k === 'clear') kp.raw = '';
+  else if (k === ',') { if (!kp.raw.includes(',')) kp.raw = (kp.raw || '0') + ','; }
+  else if (kp.mode === 'time') { if (kp.raw.length < 6) kp.raw += k; }
+  else if (kp.raw.replace(',', '').length < 7) kp.raw += k;
+  kpRender();
+});
+
+/* ============================ editor de tramos ============================ */
+let edIdx = null, edSegs = null;
+function openEditor(i) {
+  edIdx = i; edSegs = clone(tramos[i].segs);
+  $('#edTitle').textContent = 'Editar ' + tramos[i].id;
+  $('#edLanzada').checked = tramos[i].lanzada;
+  $('#edStart').value = salidas[tramos[i].id] || '';
+  $('#edNotes').value = notas[tramos[i].id] || '';
+  renderEditor(); $('#editor').classList.remove('hidden');
+}
+const numStr = (v) => v == null ? '' : String(v).replace('.', ',');
+function renderEditor() {
+  let prev = 0, prevL = null;
+  $('#edBody').innerHTML = edSegs.map((s, i) => {
+    const from = i === 0 ? '0,000' : (prev != null ? fmtKm(prev) : (prevL || '?'));
+    prev = s.h; prevL = s.hl;
+    return `<tr data-r="${i}">
+      <td class="from num">${esc(from)}</td>
+      <td><input class="num" data-f="h" inputmode="decimal" value="${esc(numStr(s.h))}" placeholder="km"></td>
+      <td><input data-f="hl" value="${esc(s.hl || '')}" placeholder="HITO, SEÑAL…"></td>
+      <td><input class="num" data-f="vs" inputmode="decimal" value="${esc(numStr(s.vs))}" placeholder="${esc(s.n || '')}"></td>
+      <td><input class="num" data-f="vl" inputmode="decimal" value="${esc(numStr(s.vl))}" placeholder="${esc(s.n || '')}"></td>
+      <td><button class="btn sm" data-delrow="${i}">✕</button></td></tr>`;
+  }).join('');
+}
+function readEditor() {
+  $$('#edBody tr').forEach((tr) => {
+    const i = +tr.dataset.r, s = edSegs[i];
+    const g = (f) => $(`[data-f="${f}"]`, tr).value;
+    s.h = parseNum(g('h')); s.hl = g('hl').trim() || null;
+    s.vs = parseNum(g('vs')); s.vl = parseNum(g('vl'));
+    if (s.vs != null && s.vl != null) s.n = null;
+  });
+}
+$('#edBody').addEventListener('change', () => { readEditor(); renderEditor(); });
+$('#edBody').addEventListener('click', (e) => { const b = e.target.closest('[data-delrow]'); if (!b) return; readEditor(); if (edSegs.length > 1) edSegs.splice(+b.dataset.delrow, 1); renderEditor(); });
+$('#edAdd').onclick = () => { readEditor(); edSegs.push({ h: null, hl: null, vs: null, vl: null, n: null }); renderEditor(); };
+$('#edRestore').onclick = () => { edSegs = clone(OFFICIAL_T[edIdx].segs); $('#edLanzada').checked = OFFICIAL_T[edIdx].lanzada; renderEditor(); };
+$('#edCancel').onclick = () => $('#editor').classList.add('hidden');
+$('#edSave').onclick = () => {
+  readEditor();
+  let last = 0;
+  for (const [i, s] of edSegs.entries()) {
+    if (s.h != null) { if (s.h <= last) { toast(`Fila ${i + 1}: el km "hasta" debe ser mayor que el anterior.`); return; } last = s.h; }
+    for (const v of [s.vs, s.vl]) if (v != null && (v <= 0 || v > 150)) { toast(`Fila ${i + 1}: media no válida.`); return; }
+  }
+  if (edSegs[edSegs.length - 1].h == null) { toast('La última fila necesita el km final del tramo.'); return; }
+  if (run.state !== 'idle' && edIdx === sel) { toast('No se puede editar el tramo en curso.'); return; }
+  const id = tramos[edIdx].id;
+  tramos[edIdx] = { id, lanzada: $('#edLanzada').checked, segs: edSegs };
+  saveTramos();
+  const st = $('#edStart').value.trim();
+  if (st) { const p = parseClock(st); if (p == null) { toast('Hora de salida no válida.'); return; } salidas[id] = secToClock(p); } else delete salidas[id];
+  store.set('salidas', salidas);
+  notas[id] = $('#edNotes').value.trim(); store.set('notas', notas);
+  $('#editor').classList.add('hidden'); renderAll(); toast(id + ' guardado.');
+};
+
+/* ============================ toast ============================ */
+let toastTimer = null;
+function toast(msg, actLabel, actFn) {
+  const t = $('#toast');
+  t.innerHTML = `<span>${esc(msg)}</span>` + (actLabel ? `<button>${esc(actLabel)}</button>` : '');
+  t.classList.remove('hidden');
+  if (actLabel) t.querySelector('button').onclick = () => { t.classList.add('hidden'); actFn(); };
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.add('hidden'), actLabel ? 6000 : 3000);
+}
+
+/* ============================ eventos de UI ============================ */
+$('#tabs').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  $$('#tabs button').forEach((x) => x.classList.toggle('on', x === b));
+  $$('main section').forEach((s) => s.classList.toggle('on', s.id === 'tab-' + b.dataset.tab));
+  if (b.dataset.tab === 'tabla' && run.state !== 'idle') tblSel = sel;
+  renderAll(); window.scrollTo(0, 0);
+});
+$('#condSeg').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b || b.dataset.v === S.cond) return;
+  S.cond = b.dataset.v; saveS();
+  if (run.state === 'running') { buildEvents(); lastEl = (now() - run.startAt) / 1000; toast('Condición cambiada a ' + S.cond.toUpperCase() + ' en pleno tramo.'); }
+  renderAll();
+});
+$('#themeBtn').addEventListener('click', () => {
+  S.theme = effTheme() === 'light' ? 'dark' : 'light'; saveS(); renderAll();
+});
+$('#tcbar').addEventListener('click', (e) => { const b = e.target.closest('[data-i]'); if (b) selectTc(+b.dataset.i); });
+$('#startCard').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.id === 'btnStartTime') {
+    openKeypad({ title: `Hora de salida de ${tramos[sel].id}`, mode: 'time', onOk: (v) => { const s = secToClock(v); salidas[tramos[sel].id] = s; store.set('salidas', salidas); store.set('lastStart', s); renderAll(); } });
+  } else if (b.id === 'btnArm') {
+    const s = salidas[tramos[sel].id] || store.get('lastStart', '');
+    const p = parseClock(s);
+    if (p == null) { toast('Primero pon la hora de salida.'); return; }
+    armAt(p);
+  } else if (b.id === 'btnGo') startNow();
+  else if (b.id === 'btnCancel') cancelRun();
+  else if (b.id === 'btnFinish') {
+    toast('¿Terminar y guardar el tramo?', 'TERMINAR', finishRun);
+  } else if (b.id === 'btnPilot') { $('#pilot').classList.remove('hidden'); renderLive(); }
+  else if (b.dataset.adj) adjustStart(+b.dataset.adj);
+});
+$('#pilot').addEventListener('click', () => $('#pilot').classList.add('hidden'));
+$('#btnHito').addEventListener('click', (e) => passLandmark(+e.currentTarget.dataset.i));
+$('#btnRef').addEventListener('click', (e) => {
+  if (run.state !== 'running') return;
+  const el = (now() - run.startAt) / 1000;
+  recordMark(el, +e.currentTarget.dataset.km, 'ref', run.gpsKm);
+});
+$('#btnMark').addEventListener('click', () => {
+  if (run.state !== 'running') return;
+  const el = (now() - run.startAt) / 1000; const g = run.gpsKm;
+  const m = curModel(); const ik = idealDist(m, el).d;
+  beep(1200, 0.06);
+  openKeypad({ title: `Marca a ${fmtT(el, 1)} — lectura del tripmaster`, mode: 'km', sub: ik != null ? `ideal ${fmtKm(ik)}` : '', onOk: (v) => recordMark(el, v, 'tecleo', g) });
+});
+$('#tblTc').addEventListener('change', (e) => { tblSel = +e.target.value; lastCurRow = null; renderTable(); });
+$('#tblStep').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; S.tblStep = +b.dataset.v; saveS(); renderSegs(); renderTable(); lastCurRow = null; });
+$('#tblFollow').addEventListener('click', () => { S.tblFollow = !S.tblFollow; saveS(); renderSegs(); });
+$('#tcGrid').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.edit != null) openEditor(+b.dataset.edit);
+  else if (b.dataset.tbl != null) { tblSel = +b.dataset.tbl; $('[data-tab="tabla"]').click(); }
+  else if (b.dataset.go != null) { selectTc(+b.dataset.go); $('[data-tab="carrera"]').click(); }
+});
+$('#logList').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-dellog]'); if (!b) return;
+  toast('¿Eliminar esta entrada?', 'Eliminar', () => { logArr = logArr.filter((l) => String(l.id) !== b.dataset.dellog); store.set('log', logArr); renderAll(); });
+});
+$('#logClear').onclick = () => toast('¿Borrar todo el registro?', 'Borrar', () => { logArr = []; store.set('log', logArr); renderAll(); });
+function download(name, text, type) {
+  const blob = new Blob([text], { type }); const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+$('#logCsv').onclick = () => {
+  const lines = ['tramo;condicion;fecha;salida;fin;crono_s;ideal_s;crono_marca;lectura_km;km_corregido;desvio_s'];
+  logArr.slice().reverse().forEach((l) => {
+    const base = [l.tc, l.cond, new Date(l.startAt).toLocaleDateString('es-ES'), fmtClock(l.startAt), fmtClock(l.endAt), ((l.endAt - l.startAt) / 1000).toFixed(1), l.ideal != null ? l.ideal.toFixed(2) : ''];
+    if (!l.marks.length) lines.push(base.concat(['', '', '', '']).join(';'));
+    l.marks.forEach((mk) => lines.push(base.concat([mk.e.toFixed(1), mk.r.toFixed(3), mk.km.toFixed(3), mk.diff.toFixed(2)]).join(';').replace(/\./g, ',')));
+  });
+  download('registro-pn26.csv', lines.join('\n'), 'text/csv');
+};
+// ajustes
+$('#syncMin').onclick = () => {
+  const raw = Date.now(); const off = S.offsetMs || 0; const official = raw + off;
+  const nearest = Math.round(official / 60000) * 60000;
+  S.offsetMs = off + (nearest - official); saveS(); beep(1500, 0.15);
+  toast(`Sincronizado: ${fmtClock(nearest)} (corrección ${(S.offsetMs / 1000).toFixed(2).replace('.', ',')} s)`);
+  if (run.state === 'running') lastEl = (now() - run.startAt) / 1000;
+  renderSettings();
+};
+$$('[data-off]').forEach((b) => b.onclick = () => { const d = +b.dataset.off; S.offsetMs = d === 0 ? 0 : (S.offsetMs || 0) + d; saveS(); if (run.state === 'running') lastEl = (now() - run.startAt) / 1000; renderSettings(); });
+$('#calApply').onclick = () => {
+  const o = parseNum($('#calOff').value), t = parseNum($('#calTrip').value);
+  if (!o || !t) { toast('Introduce las dos distancias.'); return; }
+  S.calib = o / t; saveS(); renderSettings(); toast('Factor ' + S.calib.toFixed(4).replace('.', ','));
+};
+$('#calReset').onclick = () => { S.calib = 1; saveS(); renderSettings(); };
+$$('.tog').forEach((t) => t.onclick = () => {
+  const k = t.dataset.set; S[k] = !S[k]; saveS();
+  if (k === 'gpsOn') { if (S.gpsOn) gpsStart(); else gpsStop(); }
+  if (k === 'wake') keepAwake(S.wake);
+  renderAll();
+});
+$('#gpsFactor').addEventListener('change', (e) => { const v = parseNum(e.target.value); if (v && v > 0.5 && v < 1.5) { S.gpsFactor = v; saveS(); } renderSettings(); });
+const segHandler = (id, key, num = true) => $('#' + id).addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  S[key] = num ? +b.dataset.v : b.dataset.v; saveS();
+  if (run.state === 'running') { buildEvents(); lastEl = (now() - run.startAt) / 1000; }
+  renderAll();
+});
+segHandler('leadSeg', 'lead'); segHandler('refBeepSeg', 'refBeep'); segHandler('refStepSeg', 'refStep'); segHandler('themeSeg', 'theme', false);
+$('#testSound').onclick = () => { ensureAudio(); beep(1300, 0.1); setTimeout(() => beep(1700, 0.4), 250); setTimeout(() => say('Cambio a cuarenta y nueve coma nueve en diez segundos'), 700); };
+$$('[data-calc]').forEach((b) => b.onclick = () => {
+  const d = parseNum($('#cDist').value), v = parseNum($('#cVel').value), t = parseTimeSpan($('#cTime').value);
+  const k = b.dataset.calc;
+  if (k === 'time' && d && v) $('#cTime').value = fmtT(d / v * 3600, 2);
+  else if (k === 'vel' && d && t) $('#cVel').value = (d / (t / 3600)).toFixed(2).replace('.', ',');
+  else if (k === 'dist' && v && t) $('#cDist').value = (v * t / 3600).toFixed(3).replace('.', ',');
+  else toast('Faltan datos para calcular.');
+});
+$('#expJson').onclick = () => download('copiloto-pn26-backup.json', JSON.stringify({ v: 1, settings: S, tramos, salidas, notas, log: logArr }, null, 1), 'application/json');
+$('#impJson').addEventListener('change', (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const d = JSON.parse(r.result);
+      if (!Array.isArray(d.tramos) || d.tramos.length !== OFFICIAL_T.length) throw new Error('formato');
+      tramos = d.tramos; saveTramos();
+      Object.assign(salidas, d.salidas || {}); store.set('salidas', salidas);
+      Object.assign(notas, d.notas || {}); store.set('notas', notas);
+      if (Array.isArray(d.log)) { logArr = d.log; store.set('log', logArr); }
+      if (d.settings) { Object.assign(S, d.settings); saveS(); }
+      toast('Datos importados.'); renderAll();
+    } catch (err) { toast('Archivo no válido.'); }
+  };
+  r.readAsText(f); e.target.value = '';
+});
+$('#resetAll').onclick = () => toast('¿Borrar ediciones, ajustes y registro?', 'Restaurar', () => {
+  ['tramos', 'salidas', 'notas', 'log', 'settings', 'run', 'sel', 'lastStart'].forEach(store.del); location.reload();
+});
+
+/* ============================ arranque ============================ */
+if (run.state === 'running') { buildEvents(); lastEl = (now() - run.startAt) / 1000; }
+if (S.gpsOn) gpsStart();
+renderAll();
+setInterval(tick, 50);
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+  navigator.serviceWorker.register('sw.js').then(() => { $('#swInfo').textContent = 'Modo sin conexión: activo ✓'; }).catch(() => { $('#swInfo').textContent = 'No se pudo activar el modo sin conexión.'; });
+} else $('#swInfo').textContent = location.protocol === 'file:' ? 'Abierta como archivo local: funciona, pero para instalarla en el iPad usa una dirección https.' : 'Modo sin conexión no disponible en http (necesita https).';
+</script>
+</body>
+</html>
