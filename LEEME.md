@@ -7,6 +7,7 @@ y comprobadas contra las *Tablas comunes* oficiales (1.650 filas, diferencia má
 ## Archivos
 - `index.html` — la app completa (datos incluidos, sin dependencias externas)
 - `sw.js`, `manifest.webmanifest`, `icon-*.png` — para instalarla en el iPad y usarla sin conexión
+- `Tablas-PN26.numbers` / `Tablas-PN26.xlsx` — todas las tablas de respaldo en papel/Numbers (también se descargan desde *Ajustes*)
 
 ## Instalar en el iPad (sin conexión)
 Safari solo guarda una web para usarla sin conexión si se sirve por **https**. Lo más fácil:
@@ -44,5 +45,12 @@ Safari solo guarda una web para usarla sin conexión si se sirve por **https**. 
 - **GPS** (solo en iPad con datos móviles): adelanto o retraso en directo y velocidad real. Es solo una ayuda.
 - Pantalla siempre encendida, modo claro y oscuro (botón ☀/☾ en la cabecera) y modo rojo nocturno, pitidos y voz, calculadora distancia-media-tiempo,
   copia de seguridad (exportar e importar).
+
+## Con el iPad bloqueado
+- Al **ARMAR** o dar **SALIDA**, la app pone un audio de fondo inaudible para que iOS no la congele: los pitidos siguen sonando
+  y la **pantalla de bloqueo muestra la media actual y el próximo cambio** (como si fuera música).
+- Se puede desactivar en *Ajustes → Avisos → Seguir avisando con el iPad bloqueado*.
+- Lo más seguro es no bloquear: *Ajustes del iPad → Pantalla y brillo → Bloqueo automático → Nunca*.
+- Aunque iOS la congele, el crono va por la hora: al volver está bien, no suelta pitidos atrasados y dice la media actual.
 
 Todo se guarda en el propio iPad. Si recargas la página en mitad de un tramo, el crono sigue donde estaba.

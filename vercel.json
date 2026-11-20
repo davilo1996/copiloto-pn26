@@ -1,0 +1,13 @@
+{
+  "headers": [
+    { "source": "/sw.js", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
+    { "source": "/(index.html)?", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
+    { "source": "/Tablas-PN26.numbers", "headers": [
+      { "key": "Content-Type", "value": "application/vnd.apple.numbers" },
+      { "key": "Content-Disposition", "value": "attachment; filename=\"Tablas-PN26.numbers\"" }
+    ] },
+    { "source": "/Tablas-PN26.xlsx", "headers": [
+      { "key": "Content-Disposition", "value": "attachment; filename=\"Tablas-PN26.xlsx\"" }
+    ] }
+  ]
+}

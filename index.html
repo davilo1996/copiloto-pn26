@@ -81,6 +81,8 @@ section.on{display:block}
 .btn.danger{background:var(--late);border-color:var(--late);color:#fff}
 .btn.blue{background:var(--early);border-color:var(--early);color:#fff}
 .btn.big{min-height:68px;font-size:20px}
+a.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:var(--text)}
+a.btn.acc{color:var(--accent-ink)}
 .btn.sm{min-height:42px;padding:8px 12px;font-size:14px;border-radius:11px}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .row > .btn{flex:1}
@@ -386,6 +388,9 @@ textarea.in{font-weight:500;font-size:16px;min-height:80px}
       <div class="switch">Pitidos <button class="tog" data-set="beep"></button></div>
       <div class="switch">Voz (anuncia cambios de media) <button class="tog" data-set="voice"></button></div>
       <div class="switch">Mantener pantalla encendida <button class="tog" data-set="wake"></button></div>
+      <div class="switch">Seguir avisando con el iPad bloqueado <button class="tog" data-set="bg"></button></div>
+      <p class="note" id="bgInfo"></p>
+      <p class="note">Al <b>ARMAR</b> o dar <b>SALIDA</b>, la app pone un audio de fondo inaudible: así iOS no la congela si se bloquea la pantalla, los pitidos siguen sonando y la <b>pantalla de bloqueo muestra la media y el próximo cambio</b>. Lo más seguro sigue siendo no bloquear: en el iPad, <i>Ajustes → Pantalla y brillo → Bloqueo automático → Nunca</i>. Aunque se congele, el crono va por la hora, así que al volver está bien y te dice la media actual.</p>
       <div class="field" style="margin-top:8px"><label>Aviso previo al cambio de media</label>
         <div class="seg" id="leadSeg"><button data-v="5">5 s</button><button data-v="10">10 s</button><button data-v="15">15 s</button><button data-v="20">20 s</button></div>
       </div>
@@ -426,6 +431,15 @@ textarea.in{font-weight:500;font-size:16px;min-height:80px}
       <h3>Pantalla</h3>
       <div class="seg" id="themeSeg"><button data-v="auto">Auto</button><button data-v="light">Claro</button><button data-v="dark">Oscuro</button><button data-v="red">Rojo</button></div>
       <p class="note">También se cambia con el botón ☀/☾ de la cabecera. “Claro” es el más legible al sol; “Oscuro” para la noche o túneles; “Rojo” conserva la visión nocturna; “Auto” sigue el modo del iPad.</p>
+    </div>
+
+    <div class="card">
+      <h3>Tablas de respaldo (por si falla la app)</h3>
+      <p class="note">Todas las tablas de tiempos (seco y lluvia, cada 100 m y en cada cambio), el cuadro de medias de los 16 TC y una calculadora. Escribe la hora de salida en la celda amarilla de cada hoja y verás la hora de paso. <b>Descárgala antes de la carrera</b> (con internet) y guárdala en la app Archivos o ábrela en Numbers.</p>
+      <div class="row">
+        <a class="btn sm acc" href="Tablas-PN26.numbers" download>Descargar Numbers</a>
+        <a class="btn sm" href="Tablas-PN26.xlsx" download>Descargar Excel</a>
+      </div>
     </div>
 
     <div class="card">
@@ -572,7 +586,7 @@ function parseTimeSpan(s) { // "4:11,7" -> segundos
 }
 
 /* ============================ estado ============================ */
-const DEF_S = { cond: 'seco', theme: 'auto', beep: true, voice: true, wake: true, lead: 10, refBeep: 0, refStep: 0.1, calib: 1, gpsOn: false, gpsSync: true, gpsFactor: 1, offsetMs: 0, tblStep: 0.2, tblFollow: true };
+const DEF_S = { cond: 'seco', theme: 'auto', beep: true, voice: true, wake: true, bg: true, lead: 10, refBeep: 0, refStep: 0.1, calib: 1, gpsOn: false, gpsSync: true, gpsFactor: 1, offsetMs: 0, tblStep: 0.2, tblFollow: true };
 const S = Object.assign({}, DEF_S, store.get('settings', {}));
 const saveS = () => store.set('settings', S);
 
@@ -674,6 +688,7 @@ function ensureAudio() {
     try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } catch (e) {}
   }
   if (S.wake) keepAwake(true);
+  if (run.state !== 'idle') bgStart();
 }
 function pickVoice() {
   try {
@@ -686,7 +701,9 @@ document.addEventListener('touchstart', ensureAudio, { passive: true });
 document.addEventListener('mousedown', ensureAudio);
 
 function beep(f = 1000, d = 0.12, vol = 0.5, type = 'square') {
-  if (!S.beep || !ac) return;
+  if (!S.beep) return;
+  if ((document.hidden || !ac || ac.state !== 'running') && fxPlay(f, d, vol, type)) return;
+  if (!ac) return;
   try {
     const t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
     o.type = type; o.frequency.value = f;
@@ -707,16 +724,132 @@ function say(txt) {
 const spoken = (v) => v == null ? 'sin media' : String(v).replace('.', ',');
 
 /* ============================ pantalla encendida ============================ */
-let wl = null;
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const BLANK_MP4 = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAMrbW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAB9AAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAlV0cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAB9AAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAABAAAAAQAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAAfQAAAAAAABAAAAAAHNbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAABAAAAAgABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABeG1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAThzdGJsAAAAuHN0c2QAAAAAAAAAAQAAAKhhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAABAAEABIAAAASAAAAAAAAAABFUxhdmM2Mi4yOC4xMDEgbGlieDI2NAAAAAAAAAAAAAAAGP//AAAALmF2Y0MBQsAK/+EAFmdCwArZHsBEAAADAAQAAAMACDxImSABAAVoy4PLIAAAABBwYXNwAAAAAQAAAAEAAAAUYnRydAAAAAAAAApAAAAAAAAAABhzdHRzAAAAAAAAAAEAAAACAABAAAAAABRzdHNzAAAAAAAAAAEAAAABAAAAHHN0c2MAAAAAAAAAAQAAAAEAAAACAAAAAQAAABxzdHN6AAAAAAAAAAAAAAACAAAChgAAAAoAAAAUc3RjbwAAAAAAAAABAAADWwAAAGJ1ZHRhAAAAWm1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAALWlsc3QAAAAlqXRvbwAAAB1kYXRhAAAAAQAAAABMYXZmNjIuMTIuMTAxAAAACGZyZWUAAAKYbWRhdAAAAnAGBf//bNxF6b3m2Ui3lizYINkj7u94MjY0IC0gY29yZSAxNjUgcjMyMjIgYjM1NjA1YSAtIEguMjY0L01QRUctNCBBVkMgY29kZWMgLSBDb3B5bGVmdCAyMDAzLTIwMjUgLSBodHRwOi8vd3d3LnZpZGVvbGFuLm9yZy94MjY0Lmh0bWwgLSBvcHRpb25zOiBjYWJhYz0wIHJlZj0zIGRlYmxvY2s9MTowOjAgYW5hbHlzZT0weDE6MHgxMTEgbWU9aGV4IHN1Ym1lPTcgcHN5PTEgcHN5X3JkPTEuMDA6MC4wMCBtaXhlZF9yZWY9MSBtZV9yYW5nZT0xNiBjaHJvbWFfbWU9MSB0cmVsbGlzPTEgOHg4ZGN0PTAgY3FtPTAgZGVhZHpvbmU9MjEsMTEgZmFzdF9wc2tpcD0xIGNocm9tYV9xcF9vZmZzZXQ9LTIgdGhyZWFkcz0xIGxvb2thaGVhZF90aHJlYWRzPTEgc2xpY2VkX3RocmVhZHM9MCBucj0wIGRlY2ltYXRlPTEgaW50ZXJsYWNlZD0wIGJsdXJheV9jb21wYXQ9MCBjb25zdHJhaW5lZF9pbnRyYT0wIGJmcmFtZXM9MCB3ZWlnaHRwPTAga2V5aW50PTI1MCBrZXlpbnRfbWluPTEgc2NlbmVjdXQ9NDAgaW50cmFfcmVmcmVzaD0wIHJjX2xvb2thaGVhZD00MCByYz1jcmYgbWJ0cmVlPTEgY3JmPTIzLjAgcWNvbXA9MC42MCBxcG1pbj0wIHFwbWF4PTY5IHFwc3RlcD00IGlwX3JhdGlvPTEuNDAgYXE9MToxLjAwAIAAAAAOZYiEBb///w9FAAFPf4AAAAAGQZo4CvqA';
+let wl = null, nsVideo = null;
 async function keepAwake(on) {
+  if (!on) {
+    try { if (wl) await wl.release(); } catch (e) {}
+    wl = null; if (nsVideo) nsVideo.pause(); return;
+  }
+  if (document.visibilityState !== 'visible') return;
+  let ok = false;
+  if ('wakeLock' in navigator) {
+    if (wl) ok = true;
+    else try { wl = await navigator.wakeLock.request('screen'); wl.addEventListener('release', () => { wl = null; }); ok = true; } catch (e) {}
+  }
+  // Respaldo: vídeo mudo en bucle (iPad con iOS antiguo o app de pantalla de inicio donde Wake Lock falla).
+  if (!ok || isIOS) {
+    try {
+      if (!nsVideo) {
+        nsVideo = document.createElement('video');
+        nsVideo.setAttribute('playsinline', ''); nsVideo.setAttribute('muted', ''); nsVideo.muted = true; nsVideo.loop = true;
+        nsVideo.src = BLANK_MP4;
+        nsVideo.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;opacity:0.01;pointer-events:none';
+        document.body.appendChild(nsVideo);
+      }
+      if (nsVideo.paused) nsVideo.play().catch(() => {});
+    } catch (e) {}
+  }
+}
+
+/* ============================ segundo plano (iPad bloqueado) ============================ */
+// iOS congela las webapps al bloquear la pantalla. Mientras suena audio de un elemento <audio>
+// el sistema mantiene viva la app: un bucle casi inaudible la mantiene despierta, los pitidos
+// salen por <audio> (que sí suena con la pantalla bloqueada) y la pantalla de bloqueo muestra la media.
+try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+function wavURL(smp, rate) {
+  const n = smp.length, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  w(36, 'data'); v.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, smp[i])) * 32767, true);
+  return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+}
+const toneCache = {};
+function toneURL(f, d, vol, type) {
+  const k = [f, d, vol, type].join('|'); if (toneCache[k]) return toneCache[k];
+  const rate = 22050, n = Math.floor(rate * (d + 0.03)), s = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const t = i / rate, ph = Math.sin(2 * Math.PI * f * t);
+    const env = t < d * 0.7 ? 1 : t < d ? Math.pow(0.0002, (t - d * 0.7) / (d * 0.3)) : 0;
+    s[i] = (type === 'sine' ? ph : (ph >= 0 ? 0.7 : -0.7)) * vol * env * Math.min(1, t * 400);
+  }
+  return (toneCache[k] = wavURL(s, rate));
+}
+let bgKeep = null, bgFx = [], bgFxI = 0, bgOn = false, hiddenAt = null, npAt = 0;
+function bgEls() {
+  if (bgKeep) return;
+  const rate = 8000, s = new Float32Array(rate * 2);
+  for (let i = 0; i < s.length; i++) s[i] = (Math.random() - 0.5) * 0.0006;
+  bgKeep = new Audio(wavURL(s, rate)); bgKeep.loop = true; bgKeep.preload = 'auto';
+  for (let i = 0; i < 4; i++) { const a = new Audio(); a.preload = 'auto'; bgFx.push(a); }
+}
+function bgStart() { // se llama desde un toque del usuario (iOS lo exige la primera vez)
+  if (!S.bg) return;
   try {
-    if (on && 'wakeLock' in navigator && !wl && document.visibilityState === 'visible') {
-      wl = await navigator.wakeLock.request('screen');
-      wl.addEventListener('release', () => { wl = null; });
-    } else if (!on && wl) { await wl.release(); wl = null; }
+    bgEls();
+    if (bgKeep.paused) bgKeep.play().then(() => { bgOn = true; renderBgInfo(); }).catch(() => {});
+    else bgOn = true;
+    bgFx.forEach((a) => { if (!a.dataset.ok) { a.src = toneURL(1000, 0.04, 0.0001, 'sine'); a.play().then(() => { a.dataset.ok = '1'; }).catch(() => {}); } });
+    if ('mediaSession' in navigator) {
+      const ms = navigator.mediaSession, resume = () => { if (bgKeep) bgKeep.play().catch(() => {}); };
+      ['play', 'pause', 'stop'].forEach((a) => { try { ms.setActionHandler(a, resume); } catch (e) {} });
+      ms.playbackState = 'playing';
+    }
   } catch (e) {}
 }
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.wake) keepAwake(true); });
+function bgStop() {
+  if (bgKeep) bgKeep.pause(); bgOn = false;
+  try { navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none'; } catch (e) {}
+  renderBgInfo();
+}
+function fxPlay(f, d, vol, type) {
+  if (!bgOn || !bgFx.length) return false;
+  try { const a = bgFx[bgFxI++ % bgFx.length]; a.src = toneURL(f, d, vol, type); a.play().catch(() => {}); return true; } catch (e) { return false; }
+}
+function nowPlaying() { // pantalla de bloqueo / centro de control
+  if (!bgOn || !('mediaSession' in navigator) || !window.MediaMetadata) return;
+  const t = Date.now(); if (t - npAt < 1000) return; npAt = t;
+  let title, artist;
+  const tr = tramos[sel];
+  if (run.state === 'armed') {
+    title = `${tr.id} · salida en ${fmtT(Math.max(0, (run.armedAt - now()) / 1000), 0)}`;
+    artist = `Media inicial ${fmtV(curModel()[0].v)} km/h`;
+  } else if (run.state === 'running') {
+    const o = computeLive();
+    title = `${tr.id} · ${o.seg.v != null ? fmtV(o.seg.v) + ' km/h' : (o.seg.note || 'sin media')}`;
+    artist = o.next ? `→ ${o.next.v != null ? fmtV(o.next.v) : (o.next.note || '?')} ${o.nextIn != null ? 'en ' + fmtT(Math.max(0, o.nextIn), 0) : (o.seg.bLabel ? 'en ' + o.seg.bLabel : '')}`
+      : (o.remain != null ? (o.remain > 0 ? `Meta en ${fmtT(o.remain, 0)}` : 'Tramo terminado') : 'Meta');
+  } else return;
+  try { navigator.mediaSession.metadata = new MediaMetadata({ title, artist, album: 'Copiloto PN26', artwork: [{ src: 'icon-512.png', sizes: '512x512', type: 'image/png' }] }); } catch (e) {}
+}
+function renderBgInfo() {
+  const el = document.getElementById('bgInfo'); if (!el) return;
+  el.textContent = !S.bg ? 'Desactivado: con la pantalla bloqueada la app se congela (el crono sigue siendo correcto al volver).'
+    : bgOn ? 'Activo ✓ — la app sigue avisando con la pantalla bloqueada.'
+    : 'Se activa solo al pulsar ARMAR o SALIDA YA.';
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') { hiddenAt = Date.now(); return; }
+  try { if (ac && ac.state !== 'running') ac.resume(); } catch (e) {}
+  if (S.wake) keepAwake(true);
+  if (hiddenAt && Date.now() - hiddenAt > 3000 && run.state !== 'idle') toast(`De vuelta tras ${Math.round((Date.now() - hiddenAt) / 1000)} s — el crono no se ha parado.`);
+  hiddenAt = null;
+});
+// Al volver de un bloqueo largo: no soltar una ráfaga de pitidos atrasados, solo decir la media actual.
+function catchUp(from, to) {
+  const missed = events.filter((e) => e.t > from && e.t <= to);
+  const recent = missed.filter((e) => e.t > to - 1.5);
+  recent.forEach(fireEvent);
+  if (recent.length || !missed.some((e) => e.type === 'chg' || e.type === 'end')) return;
+  if (missed.some((e) => e.type === 'end')) { beep(1700, 0.5); say('Tramo terminado'); return; }
+  const o = computeLive();
+  beep(1500, 0.25); say(o.seg.v != null ? `Media ${spoken(o.seg.v)}` : 'Cambio de media');
+  flashNext();
+}
 
 /* ============================ GPS ============================ */
 const gps = { watch: null, last: null, acc: null, speed: null, fixAt: 0, err: null };
@@ -798,20 +931,21 @@ function armAt(secOfDay) {
   let at = base.getTime() + secOfDay * 1000;
   if (at < now() - 1000) { toast('Esa hora ya ha pasado.'); return; }
   run = Object.assign(EMPTY_RUN(), { state: 'armed', tc: sel, armedAt: at });
-  lastRem = null; saveRun(); renderAll();
+  lastRem = null; saveRun(); bgStart(); renderAll();
   say(`${tramos[sel].id} armado. Salida a las ${secToClock(secOfDay).slice(0, 5)}`);
 }
 function startNow(at) {
   run.state = 'running'; run.tc = sel; run.startAt = at != null ? at : now();
   run.manual = {}; run.marks = []; run.gpsKm = 0; gps.last = null;
   if (S.gpsOn) gpsStart();
+  bgStart();
   saveRun(); buildEvents(); lastEl = (now() - run.startAt) / 1000;
   beep(1700, 0.7); say('Salida');
   if (S.wake) keepAwake(true);
   renderAll();
 }
 function cancelRun() {
-  run = Object.assign(EMPTY_RUN(), { tc: sel }); saveRun(); renderAll();
+  run = Object.assign(EMPTY_RUN(), { tc: sel }); saveRun(); bgStop(); renderAll();
 }
 function finishRun() {
   const m = curModel(); const end = now();
@@ -822,7 +956,7 @@ function finishRun() {
   store.set('log', logArr);
   const next = Math.min(sel + 1, tramos.length - 1);
   run = Object.assign(EMPTY_RUN(), { tc: next }); sel = next; store.set('sel', sel);
-  saveRun(); renderAll(); toast('Tramo guardado en el registro.');
+  saveRun(); bgStop(); renderAll(); toast('Tramo guardado en el registro.');
 }
 function adjustStart(ms) {
   if (run.state === 'running') { run.startAt -= ms; lastEl = (now() - run.startAt) / 1000; }
@@ -1167,6 +1301,7 @@ function renderSettings() {
   setT($('#calInfo'), `Factor de calibración: ${S.calib.toFixed(4).replace('.', ',')} (lectura × factor = km real)`);
   if (document.activeElement !== $('#gpsFactor')) $('#gpsFactor').value = String(S.gpsFactor).replace('.', ',');
   setT($('#gpsStatus'), !S.gpsOn ? 'GPS desactivado.' : gps.err ? 'Error: ' + gps.err : gps.acc != null ? `Señal: ±${Math.round(gps.acc)} m · velocidad ${gps.speed != null ? Math.round(gps.speed) + ' km/h' : '—'}` : 'Buscando satélites…');
+  renderBgInfo();
 }
 function renderAll() {
   applyTheme(); renderSegs(); renderTcBar(); renderStartCard(); renderLive();
@@ -1197,10 +1332,11 @@ function tick() {
   if (run.state === 'running') {
     const el = (t - run.startAt) / 1000;
     if (lastEl == null) lastEl = el;
-    if (el > lastEl) { for (const e of events) if (e.t > lastEl && e.t <= el) fireEvent(e); }
+    if (el > lastEl) { if (el - lastEl > 3) catchUp(lastEl, el); else for (const e of events) if (e.t > lastEl && e.t <= el) fireEvent(e); }
     lastEl = el;
     const o = renderLive(); updateTableCursor(o);
   }
+  if (run.state !== 'idle') nowPlaying();
   if ($('#tab-ajustes').classList.contains('on') && S.gpsOn) renderSettings();
 }
 
@@ -1412,6 +1548,7 @@ $$('.tog').forEach((t) => t.onclick = () => {
   const k = t.dataset.set; S[k] = !S[k]; saveS();
   if (k === 'gpsOn') { if (S.gpsOn) gpsStart(); else gpsStop(); }
   if (k === 'wake') keepAwake(S.wake);
+  if (k === 'bg') { if (S.bg && run.state !== 'idle') bgStart(); else if (!S.bg) bgStop(); }
   renderAll();
 });
 $('#gpsFactor').addEventListener('change', (e) => { const v = parseNum(e.target.value); if (v && v > 0.5 && v < 1.5) { S.gpsFactor = v; saveS(); } renderSettings(); });
