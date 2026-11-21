@@ -1,5 +1,5 @@
 // Service worker: guarda la app en caché para usarla sin conexión.
-const CACHE = 'copiloto-pn26-v6';
+const CACHE = 'copiloto-pn26-v7';
 const TILES = 'copiloto-pn26-tiles'; // fondo de mapa visto con cobertura, para verlo después sin ella
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './Ruta-PN26-Etapa2.gpx', './Ruta-PN26-Etapa2.kml', './vendor/leaflet.js', './vendor/leaflet.css'];
 

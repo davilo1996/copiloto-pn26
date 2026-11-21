@@ -36,7 +36,17 @@ La pestaña **Carrera** tiene dos columnas: a la izquierda los datos del TC y a 
    Con GPS se calcula en directo; sin GPS, con el último km registrado.
 6. **REGISTRAR KM**: toca el botón cuando leas el tripmaster (la hora se guarda en ese instante) y luego
    teclea la lectura (sin coma: 5432 = 5,432) o toca una sugerencia: GPS, viñetas del roadbook cercanas o el km redondo.
-7. **Crono**, **km ideal** y **resta**, como antes. **Pantalla piloto** y **TERMINAR** (guarda en el **Registro**).
+7. **Crono**, **km ideal** y **resta**. **TERMINAR** guarda el tramo en el **Registro**.
+   (Se han quitado la pantalla piloto y los botones de ajuste fino ±.)
+8. **Roadbook · lo siguiente** (TC7–TC16): la próxima indicación en grande, con flecha y distancia, y las cuatro siguientes debajo.
+   - **Giros**: las viñetas del roadbook (izquierda, derecha, horquilla, rotonda, STOP, fin…).
+   - **Curvas**: calculadas de la geometría de la carretera en OpenStreetMap; el roadbook en papel no las trae.
+     Rojo = horquilla o muy cerrada, naranja = cerrada, amarillo = media. Llevan una velocidad orientativa y avisan
+     si obliga a bajar de la media («frena»), para que sepas dónde vas a perder tiempo y dónde recuperarlo.
+   - Con GPS, la distancia se mide situándote sobre la traza del TC; sin GPS, con el km ideal.
+   - Unos 7 s antes (mínimo 120 m) la tarjeta se ilumina y avisa con pitido y voz.
+     Se desactiva en *Ajustes → Avisos* (voz del roadbook y mostrar curvas).
+   - Las curvas son orientativas (±100 m sin GPS): manda lo que ves y el roadbook.
 
 **Derecha (instrumentos)**
 - **Hora** actual HH:MM:SS (con la corrección de *Ajustes → Hora oficial*).

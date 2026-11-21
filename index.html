@@ -147,6 +147,19 @@ a.btn.acc{color:var(--accent-ink)}
 .speed-big #spdNow{font-size:clamp(80px,11vw,150px);font-weight:900;letter-spacing:-.04em;color:var(--big)}
 .speed-big #spdNow.over{color:var(--late)}
 .speed-big .unit{font-size:24px;font-weight:800;color:var(--muted)}
+.rb-now{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;margin-top:10px;padding:10px;border-radius:14px;background:var(--card2)}
+.rb-now .ic{width:clamp(76px,9vw,104px);height:clamp(76px,9vw,104px)}
+.rb-now .dist{font-size:clamp(34px,4.4vw,52px);font-weight:900;letter-spacing:-.02em;line-height:1}
+.rb-now .ttl{font-size:clamp(18px,2.1vw,24px);font-weight:800;line-height:1.2;margin-top:4px}
+.rb-now .sb{font-size:15px;font-weight:700;color:var(--muted);margin-top:2px}
+.rb-card.alert .rb-now{background:color-mix(in srgb,var(--accent) 28%,var(--card2));box-shadow:0 0 0 3px var(--accent) inset}
+.rb-list{list-style:none;margin:8px 0 0;padding:0}
+.rb-list li{display:grid;grid-template-columns:40px 5.2em 1fr;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.rb-list .ic{width:36px;height:36px}
+.rb-list .d{font-weight:900;font-size:19px}
+.rb-list .t{font-weight:700;font-size:15px;line-height:1.25}
+.rb-list .t small{display:block;color:var(--muted);font-weight:600;font-size:13px}
+.ic.cH,.ic.cM{color:var(--late)} .ic.cC{color:var(--warn)} .ic.cm{color:#c9a400} .ic.v{color:var(--text)}
 .map-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;background:none;border:0;padding:4px 0;font:inherit;color:inherit;cursor:pointer}
 .map-toggle .chev{font-weight:800;font-size:14px;color:var(--accent)}
 #map{height:360px;border-radius:12px;margin-top:10px;background:var(--card2);z-index:0}
@@ -303,6 +316,12 @@ textarea.in{font-weight:500;font-size:16px;min-height:80px}
         <div id="mediaWarn" class="warnbox hidden"></div>
       </div>
 
+      <div class="card rb-card" id="rbCard">
+        <div class="lbl" style="justify-content:space-between"><span>Roadbook · lo siguiente</span><span class="num" id="rbSrc" style="text-transform:none;letter-spacing:0"></span></div>
+        <div class="rb-now" id="rbNow"></div>
+        <ul class="rb-list" id="rbList"></ul>
+      </div>
+
       <div class="card next-card" id="nextCard">
         <div class="lbl">Próximo cambio</div>
         <div class="next-row">
@@ -457,6 +476,8 @@ textarea.in{font-weight:500;font-size:16px;min-height:80px}
       <div class="field"><label>Pitido suave en cada referencia de distancia</label>
         <div class="seg" id="refBeepSeg"><button data-v="0">No</button><button data-v="0.1">100 m</button><button data-v="0.2">200 m</button><button data-v="0.5">500 m</button><button data-v="1">1 km</button></div>
       </div>
+      <div class="switch">Roadbook: avisar por voz de giros y curvas <button class="tog" data-set="rbVoice"></button></div>
+      <div class="switch">Roadbook: mostrar curvas calculadas del mapa <button class="tog" data-set="rbCurves"></button></div>
       <button class="btn sm" id="testSound">Probar sonido y voz</button>
     </div>
 
@@ -591,6 +612,8 @@ const DEFAULT_NOTES = {
 
 /* Roadbook (etapa 2, TC7–TC16): viñetas [km desde la salida, nº, indicación, punto sin km, km estimado] y sectores de enlace con enlaces de navegación */
 const ROADBOOK = {"TC7":[[0.0,182,"Salida · farola junto a naranjo (GR-3204)"],[0.45,183,"Bifurcación: derecha"],[4.598,184,"Recto · hito GR-3204 km 5"],[4.824,185,"Izquierda → Pinos del Valle 5"],[6.822,186,"Izquierda (desvío a la dcha.)"],[8.616,187,"FIN TC7 · hito GR-3204 km 9"]],"TC8":[[0.0,189,"Salida · paso de peatones (El Pilar)"],[0.135,190,"Recto (cruce a la izq., parada bus)"],[1.275,191,"Seguir principal a la derecha"],[3.524,192,"Recto · hito GR-3204 km 13"],[10.554,193,"Recto · hito GR-3204 km 20"],[14.639,194,"Seguir principal (desvío a la dcha.)"],[15.076,195,"Entrada Güájar Faragüit"],[15.302,196,"Horquilla a la izquierda junto al BAR"],[16.595,197,"Recto · hito GR-3204 km 26"],[16.806,198,"Izquierda (desvío a la dcha.)"],[21.872,199,"Recto (cruce a la dcha.)"],[22.019,200,"FIN TC8 · peligro desprendimientos"]],"TC9":[[0.0,214,"Salida en farola · STOP: derecha GR-5209"],[0.225,215,"Recto (desvío a la dcha.)"],[2.552,216,"Izquierda en cruce"],[3.018,217,"Recto (cruce a la izq.)"],[3.267,218,"Derecha → Castell de Ferro"],[5.868,219,"Recto · hito GR-5209 km 6"],[9.757,220,"Izquierda GR-5207 → Lújar 10"],[13.266,221,"Derecha (desvío a la izq.)"],[14.183,222,"Recto (desvío a la dcha.)"],[15.392,223,"Recto · hito GR-5207 km 4"],[19.235,224,"FIN TC9 · cartel Lújar"]],"TC10":[[0.0,227,"Salida LANZADA · hito GR-5206 km 13"],[4.036,228,"Recto · hito GR-5206 km 9"],[8.516,229,"Izquierda (NO a Rubite)"],[13.083,230,"STOP: derecha A-4131 → Albuñol 25"],[15.691,231,"FIN TC10 · hito A-4131 km 14"]],"TC11":[[0.0,233,"Salida · hito GR-5204 km 0"],[0.228,234,"Izquierda (desvío a la dcha.)"],[0.972,235,"Izquierda · hito km 1"],[null,236,"Hito GR-5204 km 4 · CAMBIO DE MEDIA","HITO 4",4.04],[null,237,"Hito GR-5204 km 5 · CAMBIO DE MEDIA","HITO 5",5.05],[5.338,238,"Recto (desvío a la izq.)"],[null,239,"Señal 40 · CAMBIO DE MEDIA","SEÑAL 40",null],[13.12,240,"FIN TC11 · hito GR-5204 km 13"]],"TC12":[[0.0,259,"Salida · paso de peatones (Torvizcón); a 40 m dcha. junto al hotel"],[0.215,260,"Derecha → Contraviesa 10 (subida pronunciada)"],[0.638,261,"Horquilla a la izquierda"],[8.532,262,"Izquierda (desvío a la dcha.)"],[10.762,263,"STOP: derecha GR-5204 → Órgiva 32"],[15.095,264,"Recto · hito GR-5204 km 1"],[15.859,265,"Derecha (bifurcación)"],[16.138,266,"Ceda: derecha A-4131 → Órgiva 23"],[17.148,267,"FIN TC12 · hito A-4131 km 15"]],"TC13":[[0.0,269,"Salida · final de línea continua (salir con precaución)"],[3.008,270,"Izquierda GR-5206 → Rubite 5"],[7.506,271,"Derecha → Castell de Ferro 15"],[10.938,272,"Recto · hito GR-5206 km 8"],[15.91,273,"FIN TC13 · hito GR-5206 km 13"]],"TC14":[[0.0,281,"Salida LANZADA · hito GR-5209 km 19"],[0.235,282,"Recto (camino a la izq.)"],[1.627,283,"Recto (cruce)"],[4.752,284,"Travesía Gualchos (30) · recto"],[5.973,285,"Recto · hito GR-5209 km 13"],[9.106,286,"Izquierda → Motril 13"],[15.575,287,"Izquierda (desvío a la dcha.)"],[16.005,288,"FIN TC14 · hito GR-5209 km 3"]],"TC15":[[0.0,302,"Salida en STOP · incorporación GR-5300 (hito 10)"],[0.456,303,"Izquierda (desvío a la dcha.)"],[4.226,304,"Seguir principal · badén (señal 20)"],[4.297,305,"Rotonda: izquierda"],[4.957,306,"Izquierda (bifurcación) · hito 5"],[9.847,307,"FIN TC15 · en ceda el paso"]],"TC16":[[0.0,310,"Salida · señal de cruce (A-4050), limitación 30"],[0.117,311,"Recto (desvío a la dcha.)"],[4.44,312,"Seguir a la izquierda (cruce)"],[7.334,313,"¡Firme en mal estado!"],[11.905,314,"Recto · hito A-4050 km 35"],[15.921,315,"Recto · hito A-4050 km 31"],[21.976,316,"FIN TC16 · hito A-4050 km 25"]]};
+/* Curvas calculadas de la geometría de la carretera (OpenStreetMap): [km apex, I/D, H=horquilla M=muy cerrada C=cerrada m=media, radio m, giro °, km/h orientativos] */
+const CURVAS = {"TC7":[[1.56,"D","C",23,120,35],[1.61,"I","C",29,88,40],[1.81,"D","H",20,177,30],[2.34,"I","m",34,122,40],[2.925,"D","C",28,82,40],[3.07,"I","C",28,80,40],[3.145,"D","C",21,79,35],[3.225,"D","C",20,105,30],[3.265,"I","C",22,85,35],[3.455,"D","C",29,78,40],[4.23,"D","m",36,73,45],[4.305,"I","C",24,106,35],[4.415,"D","H",15,151,30],[4.52,"I","C",24,82,35],[4.56,"D","C",26,71,35],[4.685,"I","C",24,97,35],[5.325,"D","C",26,92,35],[6.095,"I","C",26,157,35],[6.52,"I","C",20,138,30],[6.595,"D","m",31,75,40],[7.495,"I","C",27,115,35],[8.595,"D","C",28,92,40]],"TC8":[[0.79,"D","m",34,71,40],[1.12,"I","C",29,91,40],[2.255,"D","C",23,110,35],[2.375,"I","C",30,105,40],[2.685,"I","H",30,203,40],[2.94,"I","C",21,117,35],[3.5,"D","C",28,92,40],[3.645,"I","H",24,156,35],[3.73,"D","C",27,85,35],[3.785,"I","C",24,105,35],[4.035,"D","m",42,92,45],[4.32,"I","C",24,146,35],[4.58,"D","m",31,130,40],[4.795,"I","C",24,136,35],[5.1,"D","C",22,128,35],[5.69,"I","C",27,132,35],[5.915,"D","m",40,114,45],[6.115,"I","m",33,70,40],[6.345,"I","C",27,128,35],[6.415,"D","m",31,74,40],[6.705,"D","m",33,70,40],[6.955,"I","C",30,77,40],[7.43,"D","m",33,71,40],[7.56,"I","C",21,120,35],[7.685,"D","m",31,98,40],[7.88,"I","m",32,72,40],[8.235,"I","C",30,117,40],[8.615,"I","C",29,136,40],[11.22,"D","m",31,110,40],[11.42,"I","m",31,147,40],[11.8,"I","H",18,157,30],[11.975,"D","C",26,128,35],[12.295,"D","m",35,76,45],[12.37,"I","C",26,90,35],[12.74,"I","C",29,79,40],[13.375,"D","C",27,119,35],[14.805,"I","C",23,127,35],[15.495,"D","m",32,71,40],[15.62,"I","m",32,72,40],[16.145,"I","C",30,77,40],[16.205,"D","m",33,103,40],[16.305,"I","C",28,98,40],[16.375,"D","C",26,94,35],[17.29,"D","C",28,125,40],[17.465,"I","m",32,83,40],[17.615,"D","m",31,89,40],[17.695,"I","m",44,73,50],[17.78,"D","C",25,119,35],[18.2,"I","C",30,76,40],[18.615,"D","C",26,83,35],[18.72,"D","C",24,105,35],[19.005,"D","C",25,95,35],[19.595,"D","H",21,174,35],[19.765,"I","m",32,73,40],[20.11,"I","m",40,75,45],[20.3,"D","C",29,167,40],[20.495,"I","m",36,142,45],[21.47,"D","m",35,74,45],[21.655,"I","m",41,76,45]],"TC9":[[3.72,"D","M",16,144,30],[3.76,"I","M",17,140,30],[3.95,"I","H",16,157,30],[4.035,"D","m",36,74,45],[4.17,"I","C",25,91,35],[4.225,"D","H",18,235,30],[4.53,"D","C",23,101,35],[4.63,"I","m",32,138,40],[4.975,"D","C",23,140,35],[5.23,"D","m",31,74,40],[5.58,"D","C",27,85,35],[5.71,"I","m",40,77,45],[5.84,"D","m",33,79,40],[5.98,"I","m",32,84,40],[6.185,"I","m",34,77,40],[6.32,"I","m",40,93,45],[6.915,"I","m",35,77,45],[7.22,"D","m",31,81,40],[7.435,"I","C",30,95,40],[7.64,"I","m",34,97,40],[7.735,"D","C",25,104,35],[8.19,"D","m",44,76,50],[9.495,"I","m",35,98,45],[9.99,"I","C",27,135,35],[10.135,"I","C",27,89,35],[10.28,"D","m",37,90,45],[10.465,"I","C",22,149,35],[10.765,"D","m",36,76,45],[11.345,"D","C",27,160,35],[11.42,"I","C",30,81,40],[11.535,"D","H",18,152,30],[11.645,"I","m",37,86,45],[11.88,"D","m",32,74,40],[12.81,"D","m",36,104,45],[13.515,"I","C",30,77,40],[16.28,"I","m",37,112,45],[16.41,"D","C",22,125,35],[16.58,"D","C",24,104,35],[16.64,"I","m",35,73,45],[16.755,"I","m",37,94,45],[17.39,"I","m",45,76,50],[17.495,"D","H",24,159,35],[17.73,"I","m",37,76,45],[17.79,"D","C",27,88,35],[18.15,"I","C",25,139,35],[18.555,"D","H",23,165,35],[18.795,"D","m",38,88,45],[19.185,"D","m",32,71,40]],"TC10":[[0.265,"I","C",22,100,35],[0.355,"I","C",27,89,35],[0.855,"D","C",26,153,35],[1.495,"I","m",34,71,40],[1.585,"D","C",26,170,35],[1.845,"D","H",15,165,30],[1.94,"I","m",35,71,45],[2.07,"I","C",28,89,40],[2.29,"I","M",17,144,30],[2.345,"D","H",14,174,25],[3.455,"D","C",28,81,40],[3.515,"I","m",31,77,40],[3.595,"D","C",30,100,40],[3.785,"I","C",21,132,35],[4.27,"D","C",22,134,35],[4.615,"I","C",23,101,35],[5.195,"D","C",20,112,30],[5.515,"I","m",36,76,45],[5.8,"D","C",24,94,35],[5.985,"I","C",23,145,35],[7.56,"I","C",30,77,40],[8.02,"D","C",28,81,40],[8.66,"D","H",16,227,30],[8.855,"I","M",13,105,25],[8.91,"D","C",29,76,40],[9.02,"D","H",14,187,25],[9.29,"D","H",13,173,25],[9.35,"I","C",21,108,35],[9.42,"I","M",18,129,30],[9.465,"D","C",25,94,35],[9.68,"I","H",15,152,30],[9.83,"D","C",27,107,35],[9.91,"I","M",18,127,30],[9.965,"D","M",14,84,25],[9.98,"D","M",13,69,25],[10.06,"D","C",22,98,35],[10.3,"D","C",23,102,35],[10.39,"I","C",19,139,30],[10.505,"D","C",22,148,35],[10.595,"I","C",19,133,30],[10.69,"D","H",15,154,30],[10.96,"I","H",14,179,25],[11.105,"D","M",14,68,25],[11.115,"I","M",13,65,25],[11.12,"D","M",13,67,25],[11.23,"D","C",28,83,40],[11.28,"I","H",14,238,25],[11.605,"D","H",13,213,25],[11.69,"I","m",34,72,40],[11.965,"I","H",13,206,25],[12.215,"D","H",13,198,25],[12.77,"I","H",13,185,25],[12.945,"D","H",13,171,25],[13.325,"I","H",20,187,30],[13.655,"D","H",23,183,35],[14.165,"I","H",19,176,30],[14.42,"D","C",28,185,40]],"TC11":[[0.475,"D","C",26,90,35],[0.72,"I","m",35,76,45],[0.805,"D","C",28,96,40],[5.715,"D","C",29,94,40],[5.87,"I","C",25,103,35],[6.005,"D","m",33,70,40],[7.365,"D","C",29,95,40],[7.505,"I","m",32,98,40],[8.735,"D","m",44,83,50],[9.63,"I","m",31,75,40],[9.99,"I","m",38,86,45],[10.22,"D","m",31,75,40],[11.875,"I","m",40,122,45],[12.65,"D","C",30,76,40],[12.73,"I","m",40,79,45],[12.95,"I","m",33,78,40],[13.035,"D","C",26,90,35]],"TC12":[[0.075,"I","C",27,112,35],[0.445,"I","C",20,113,30],[1.12,"I","M",18,138,30],[1.365,"D","C",24,103,35],[1.425,"I","C",28,81,40],[2.15,"D","C",25,93,35],[3.19,"I","C",29,79,40],[3.84,"D","H",13,174,25],[3.98,"I","H",14,168,25],[4.175,"D","H",14,165,25],[4.825,"I","C",22,112,35],[4.93,"I","C",19,121,30],[4.97,"D","C",23,100,35],[5.615,"D","H",13,171,25],[5.66,"I","H",13,164,25],[8.215,"D","M",17,135,30],[8.285,"I","m",40,94,45],[8.39,"D","C",30,75,40],[8.725,"I","m",36,82,45],[10.03,"I","M",17,149,30],[10.51,"D","H",13,156,25],[15.03,"I","C",28,96,40],[15.36,"I","C",26,89,35],[16.27,"I","m",35,72,45]],"TC13":[[0.07,"D","m",31,112,40],[1.54,"I","C",29,196,40],[1.795,"D","H",19,163,30],[2.31,"I","H",23,179,35],[2.635,"D","H",21,187,35],[3.195,"D","H",13,179,25],[3.745,"I","H",13,198,25],[3.995,"D","H",13,199,25],[4.355,"I","H",13,215,25],[4.68,"D","H",14,240,25],[4.735,"I","C",28,83,40],[4.84,"I","M",14,100,25],[5.0,"D","H",14,179,25],[5.27,"I","M",15,149,30],[5.365,"D","C",19,143,30],[5.455,"I","H",22,160,35],[5.57,"D","C",19,142,30],[5.66,"I","C",23,102,35],[5.895,"I","C",22,103,35],[5.98,"I","M",13,102,25],[6.05,"D","M",18,127,30],[6.13,"I","C",27,95,35],[6.28,"D","H",15,158,30],[6.5,"I","C",25,94,35],[6.535,"D","M",18,129,30],[6.61,"D","C",21,118,35],[6.67,"I","H",13,173,25],[6.94,"I","H",14,187,25],[7.05,"I","C",29,81,40],[7.095,"D","M",15,76,30],[7.105,"D","M",13,73,25],[7.3,"I","H",16,227,30],[7.89,"D","m",32,72,40],[7.93,"I","C",28,80,40],[8.395,"D","C",30,77,40],[9.965,"D","C",24,143,35],[10.155,"I","C",24,91,35],[10.76,"I","C",21,110,35],[11.335,"D","C",23,101,35],[11.68,"I","C",21,136,35],[12.165,"D","C",21,142,35],[12.355,"I","C",29,93,40],[12.435,"D","m",31,77,40],[12.495,"I","C",28,81,40],[13.605,"I","H",13,174,25],[13.66,"D","M",17,144,30],[13.88,"D","C",28,92,40],[14.01,"D","m",35,74,45],[14.105,"I","H",15,161,30],[14.365,"I","C",26,162,35],[15.095,"I","C",26,148,35],[15.595,"D","C",27,89,35],[15.685,"D","C",22,105,35]],"TC14":[[0.435,"I","m",42,141,45],[1.895,"D","m",37,86,45],[2.145,"I","C",27,160,35],[2.54,"D","m",44,84,50],[2.73,"D","C",26,92,35],[2.835,"I","H",19,196,30],[2.965,"I","C",27,91,35],[3.045,"D","C",30,95,40],[3.49,"I","C",28,83,40],[3.61,"I","H",16,156,30],[3.7,"D","m",33,70,40],[3.885,"D","H",19,195,30],[4.35,"D","C",30,90,40],[4.495,"I","H",22,195,35],[4.785,"I","C",25,92,35],[4.995,"D","m",37,70,45],[5.675,"I","C",23,106,35],[5.825,"D","C",28,87,40],[5.975,"I","C",20,147,30],[6.195,"D","C",22,133,35],[6.7,"D","m",32,72,40],[6.775,"D","C",28,76,40],[6.82,"I","C",24,97,35],[6.96,"I","C",23,122,35],[7.02,"D","C",29,74,40],[7.28,"I","C",23,128,35],[7.45,"D","H",16,199,30],[7.755,"D","C",23,98,35],[7.845,"I","C",21,114,35],[7.94,"D","C",29,79,40],[8.37,"D","H",20,177,30],[8.59,"I","H",22,151,35],[10.515,"I","m",45,76,50],[10.97,"I","C",25,104,35],[11.065,"D","m",34,97,40],[11.27,"D","C",30,93,40],[11.49,"I","m",32,83,40],[11.79,"D","m",34,82,40],[12.39,"D","m",40,86,45],[12.52,"D","m",33,77,40],[12.725,"D","m",32,81,40],[12.865,"I","m",33,79,40],[13.125,"I","C",27,85,35],[13.475,"I","m",31,74,40],[13.73,"I","C",23,140,35],[14.08,"D","m",31,150,40],[14.18,"I","C",23,101,35],[14.48,"I","H",18,225,30],[14.54,"D","C",25,91,35],[14.675,"I","m",37,74,45],[14.745,"D","H",16,157,30],[14.945,"D","M",17,138,30],[14.985,"I","M",16,144,30]],"TC15":[[0.205,"D","C",30,77,40],[0.58,"I","m",44,72,50],[0.755,"I","C",30,82,40],[0.85,"D","C",27,97,35],[0.94,"I","m",35,70,45],[1.62,"I","m",32,72,40],[2.01,"D","m",38,82,45],[2.485,"I","m",38,70,45],[3.3,"I","m",41,128,45],[3.555,"D","H",19,203,30],[4.54,"D","C",30,173,40],[6.265,"D","m",43,158,45],[7.93,"D","m",39,145,45]],"TC16":[[0.945,"I","C",26,162,35],[1.495,"D","C",29,86,40],[1.595,"I","m",32,84,40],[1.705,"D","C",24,124,35],[1.775,"I","m",34,110,40],[2.22,"I","m",34,71,40],[2.69,"D","H",24,181,35],[3.225,"I","H",22,165,35],[3.455,"D","C",27,117,35],[3.545,"I","m",35,89,45],[3.775,"D","H",25,210,35],[4.285,"D","m",41,75,45],[4.42,"I","m",37,125,45],[4.69,"D","m",31,108,40],[4.99,"I","C",29,92,40],[5.94,"D","H",23,186,35],[6.58,"D","m",37,76,45],[6.64,"I","m",38,74,45],[6.75,"I","m",35,77,45],[7.085,"D","C",22,118,35],[7.835,"I","H",21,213,35],[8.345,"D","m",36,95,45],[9.25,"D","H",22,176,35],[9.905,"I","C",27,138,35],[10.2,"I","C",30,77,40],[10.355,"I","C",29,190,40],[10.47,"D","m",36,93,45],[11.5,"I","C",30,95,40],[12.375,"D","m",39,85,45],[12.58,"I","m",31,88,40],[12.815,"D","C",27,127,35],[13.005,"I","m",35,70,45],[13.18,"I","m",32,107,40],[13.295,"D","m",34,89,40],[13.59,"I","C",27,108,35],[14.035,"I","C",23,129,35],[14.15,"D","C",23,111,35],[14.37,"I","m",40,104,45],[14.85,"D","m",34,74,40],[16.26,"I","C",28,103,40],[16.36,"D","H",21,151,35],[16.715,"I","C",28,92,40],[16.83,"D","C",25,92,35],[16.945,"I","m",32,144,40],[17.34,"I","m",31,105,40],[17.555,"D","m",33,103,40],[17.865,"D","C",29,98,40],[18.965,"D","C",30,83,40],[19.25,"D","C",29,90,40]]};
 const RUTA = [{"id":"PC-TC7","title":"Parque Cerrado → TC7","rb_km":33.382,"osm_km":33.891,"time":"00h35","media":57.2,"google":"https://www.google.com/maps/dir/?api=1&origin=37.146527,-3.613550&destination=36.945433,-3.554147&travelmode=driving&waypoints=37.080342,-3.648459%7C37.002901,-3.580085%7C36.963731,-3.547699%7C36.948071,-3.550762","apple":"https://maps.apple.com/?daddr=36.945433,-3.554147&dirflg=d","waze":"https://waze.com/ul?ll=36.945433,-3.554147&navigate=yes","tc":null,"tc_km":null},{"id":"TC7-TC8","title":"TC7 → TC8","rb_km":9.115,"osm_km":8.83,"time":"00h15","media":36.5,"google":"https://www.google.com/maps/dir/?api=1&origin=36.945433,-3.554147&destination=36.909002,-3.558026&travelmode=driving&waypoints=36.935644,-3.572101%7C36.929287,-3.582547%7C36.910592,-3.558512","apple":"https://maps.apple.com/?daddr=36.909002,-3.558026&dirflg=d","waze":"https://waze.com/ul?ll=36.909002,-3.558026&navigate=yes","tc":"TC7","tc_km":8.616},{"id":"TC8-TC9","title":"TC8 → TC9","rb_km":40.121,"osm_km":41.784,"time":"01h11","media":33.9,"google":"https://www.google.com/maps/dir/?api=1&origin=36.909002,-3.558026&destination=36.729910,-3.481029&travelmode=driving&waypoints=36.840940,-3.582003%7C36.812677,-3.544035%7C36.791888,-3.541670%7C36.747200,-3.563400%7C36.726200,-3.506800","apple":"https://maps.apple.com/?daddr=36.729910,-3.481029&dirflg=d","waze":"https://waze.com/ul?ll=36.729910,-3.481029&navigate=yes","tc":"TC8","tc_km":22.019},{"id":"TC9-TC10","title":"TC9 → TC10","rb_km":26.059,"osm_km":25.881,"time":"00h36","media":43.4,"google":"https://www.google.com/maps/dir/?api=1&origin=36.729910,-3.481029&destination=36.771252,-3.381771&travelmode=driving&waypoints=36.748081,-3.414939%7C36.785526,-3.407695%7C36.778796,-3.391617","apple":"https://maps.apple.com/?daddr=36.771252,-3.381771&dirflg=d","waze":"https://waze.com/ul?ll=36.771252,-3.381771&navigate=yes","tc":"TC9","tc_km":19.235},{"id":"TC10-TC11","title":"TC10 → TC11","rb_km":17.773,"osm_km":17.659,"time":"00h27","media":39.5,"google":"https://www.google.com/maps/dir/?api=1&origin=36.771252,-3.381771&destination=36.813280,-3.305925&travelmode=driving&waypoints=36.820455,-3.340114%7C36.816828,-3.324403","apple":"https://maps.apple.com/?daddr=36.813280,-3.305925&dirflg=d","waze":"https://waze.com/ul?ll=36.813280,-3.305925&navigate=yes","tc":"TC10","tc_km":15.691},{"id":"TC11-REAG","title":"TC11 → Reagrupamiento (Cádiar)","rb_km":25.8,"osm_km":22.832,"time":"00h41","media":37.8,"google":"https://www.google.com/maps/dir/?api=1&origin=36.813280,-3.305925&destination=36.925758,-3.178809&travelmode=driving&waypoints=36.870882,-3.210223","apple":"https://maps.apple.com/?daddr=36.925758,-3.178809&dirflg=d","waze":"https://waze.com/ul?ll=36.925758,-3.178809&navigate=yes","tc":"TC11","tc_km":13.12},{"id":"REAG-TC12","title":"Reagrupamiento → TC12","rb_km":20.117,"osm_km":16.972,"time":"00h40","media":30.2,"google":"https://www.google.com/maps/dir/?api=1&origin=36.925758,-3.178809&destination=36.878894,-3.299889&travelmode=driving","apple":"https://maps.apple.com/?daddr=36.878894,-3.299889&dirflg=d","waze":"https://waze.com/ul?ll=36.878894,-3.299889&navigate=yes","tc":null,"tc_km":null},{"id":"TC12-TC13","title":"TC12 → TC13","rb_km":17.771,"osm_km":17.539,"time":"00h26","media":41.0,"google":"https://www.google.com/maps/dir/?api=1&origin=36.878894,-3.299889&destination=36.815552,-3.322019&travelmode=driving&waypoints=36.845428,-3.271704%7C36.813280,-3.305925%7C36.816844,-3.318386","apple":"https://maps.apple.com/?daddr=36.815552,-3.322019&dirflg=d","waze":"https://waze.com/ul?ll=36.815552,-3.322019&navigate=yes","tc":"TC12","tc_km":17.148},{"id":"TC13-TC14","title":"TC13 → TC14","rb_km":24.068,"osm_km":24.354,"time":"00h37","media":39.0,"google":"https://www.google.com/maps/dir/?api=1&origin=36.815552,-3.322019&destination=36.727377,-3.367601&travelmode=driving&waypoints=36.770575,-3.381624%7C36.722480,-3.359142","apple":"https://maps.apple.com/?daddr=36.727377,-3.367601&dirflg=d","waze":"https://waze.com/ul?ll=36.727377,-3.367601&navigate=yes","tc":"TC13","tc_km":15.91},{"id":"TC14-TC15","title":"TC14 → TC15","rb_km":38.629,"osm_km":38.437,"time":"00h57","media":40.7,"google":"https://www.google.com/maps/dir/?api=1&origin=36.727377,-3.367601&destination=36.784289,-3.610037&travelmode=driving&waypoints=36.740049,-3.387165%7C36.737984,-3.453145%7C36.737643,-3.489718%7C36.781653,-3.526078","apple":"https://maps.apple.com/?daddr=36.784289,-3.610037&dirflg=d","waze":"https://waze.com/ul?ll=36.784289,-3.610037&navigate=yes","tc":"TC14","tc_km":16.005},{"id":"TC15-TC16","title":"TC15 → TC16","rb_km":13.471,"osm_km":13.378,"time":"00h20","media":40.4,"google":"https://www.google.com/maps/dir/?api=1&origin=36.784289,-3.610037&destination=36.822765,-3.684004&travelmode=driving&waypoints=36.804367,-3.664499","apple":"https://maps.apple.com/?daddr=36.822765,-3.684004&dirflg=d","waze":"https://waze.com/ul?ll=36.822765,-3.684004&navigate=yes","tc":"TC15","tc_km":9.847},{"id":"TC16-FIN","title":"TC16 → Llegada (Santa Fe)","rb_km":72.206,"osm_km":70.662,"time":"01h31","media":47.6,"google":"https://www.google.com/maps/dir/?api=1&origin=36.822765,-3.684004&destination=37.193126,-3.722409&travelmode=driving&waypoints=36.891832,-3.731969%7C36.953387,-3.722392%7C37.068979,-3.651619%7C37.101330,-3.722856","apple":"https://maps.apple.com/?daddr=37.193126,-3.722409&dirflg=d","waze":"https://waze.com/ul?ll=37.193126,-3.722409&navigate=yes","tc":"TC16","tc_km":21.976}];
 
 /* ============================ utilidades ============================ */
@@ -647,7 +670,7 @@ function parseTimeSpan(s) { // "4:11,7" -> segundos
 }
 
 /* ============================ estado ============================ */
-const DEF_S = { cond: 'seco', theme: 'auto', beep: true, voice: true, wake: true, bg: true, lead: 10, refBeep: 0, refStep: 0.1, calib: 1, gpsOn: false, gpsSync: true, gpsFactor: 1, offsetMs: 0, tblStep: 0.2, tblFollow: true };
+const DEF_S = { rbVoice: true, rbCurves: true, cond: 'seco', theme: 'auto', beep: true, voice: true, wake: true, bg: true, lead: 10, refBeep: 0, refStep: 0.1, calib: 1, gpsOn: false, gpsSync: true, gpsFactor: 1, offsetMs: 0, tblStep: 0.2, tblFollow: true };
 const S = Object.assign({}, DEF_S, store.get('settings', {}));
 const saveS = () => store.set('settings', S);
 
@@ -1157,10 +1180,6 @@ function renderStartCard() {
     h = `<div class="lbl">${esc(tr.id)} · salida ${badges}</div>
       <div style="margin:10px 0 4px"><button class="timebtn num" id="btnStartTime"><small>HORA DE SALIDA · toca para cambiarla</small>${fmtClock(run.armedAt)}</button></div>
       <div class="countdown num" id="cdVal">--</div>
-      <div class="row">
-        <button class="btn sm" data-adj="-60000">−1 min</button><button class="btn sm" data-adj="60000">+1 min</button>
-        <button class="btn sm" data-adj="-1000">−1 s</button><button class="btn sm" data-adj="1000">+1 s</button>
-      </div>
       <div class="row" style="margin-top:8px"><button class="btn" id="btnCancel">Cancelar</button><button class="btn go" id="btnGo">SALIDA YA</button></div>`;
   } else {
     h = `<div class="lbl">En tramo ${esc(tr.id)} ${badges}</div>
@@ -1168,12 +1187,7 @@ function renderStartCard() {
         <div><div class="sub">Hora de salida</div><div class="num" style="font-size:34px;font-weight:900">${fmtClock(run.startAt)}</div></div>
         ${T != null ? `<div style="text-align:right"><div class="sub">Llegada ideal</div><div class="num" style="font-size:26px;font-weight:800">${ap(m)}${fmtClock(run.startAt + T * 1000)}</div></div>` : ''}
       </div>
-      <div class="row">
-        <button class="btn sm" data-adj="-1000">−1 s</button><button class="btn sm" data-adj="-100">−0,1</button>
-        <button class="btn sm" data-adj="100">+0,1</button><button class="btn sm" data-adj="1000">+1 s</button>
-      </div>
-      <div class="row" style="margin-top:8px"><button class="btn blue" id="btnPilot">PANTALLA PILOTO</button><button class="btn danger" id="btnFinish">TERMINAR</button></div>
-      <p class="note" style="margin:8px 0 0">Ajuste: +0,1 adelanta el crono (si saliste tarde).</p>`;
+      <div class="row"><button class="btn danger" id="btnFinish">TERMINAR</button></div>`;
   }
   setH(card, h);
 }
@@ -1208,6 +1222,110 @@ function renderInstruments(seg) {
   $('#btnGpsOn').classList.toggle('hidden', !!S.gpsOn);
   if (map && mapOpen()) { drawRoute(); updateMapPos(); }
 }
+/* ---------- roadbook digital: próximos giros (viñetas) y curvas (geometría) ---------- */
+const RB_ICONS = {
+  S: '<path d="M24 44V8"/><path d="M14 18 24 8l10 10"/>',
+  R: '<path d="M16 44V26q0-8 8-8h16"/><path d="M32 10l8 8-8 8"/>',
+  L: '<path d="M32 44V26q0-8-8-8H8"/><path d="M16 10l-8 8 8 8"/>',
+  uL: '<path d="M32 44V20a8 8 0 0 0-16 0v16"/><path d="M9 29l7 8 7-8"/>',
+  uR: '<path d="M16 44V20a8 8 0 0 1 16 0v16"/><path d="M25 29l7 8 7-8"/>',
+  cR: '<path d="M16 44q0-26 24-30"/><path d="M31 7l9 7-7 9"/>',
+  cL: '<path d="M32 44q0-26-24-30"/><path d="M17 7 8 14l7 9"/>',
+  round: '<circle cx="24" cy="22" r="9"/><path d="M24 44V31"/><path d="M17 15 9 7"/><path d="M9 15V7h8"/>',
+  fin: '<path d="M12 44V6"/><path d="M12 8h24v16H12"/><path d="M18 8v16M24 8v16M30 8v16M12 16h24" stroke-width="2"/>',
+  start: '<path d="M12 44V6"/><path d="M12 8l24 8-24 8"/>',
+  warn: '<path d="M24 6 44 42H4z"/><path d="M24 18v12M24 35v2"/>',
+  hito: '<rect x="15" y="8" width="18" height="28" rx="4"/><path d="M15 18h18M24 36v8"/>'
+};
+const rbIcon = (k, cls) => `<svg class="ic ${cls || ''}" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">${RB_ICONS[k] || RB_ICONS.S}</svg>`;
+function vinKind(t) {
+  if (/^FIN/.test(t)) return 'fin';
+  if (/^Salida/.test(t)) return 'start';
+  if (/Horquilla a la izquierda/i.test(t)) return 'uL';
+  if (/Horquilla a la derecha/i.test(t)) return 'uR';
+  if (/Rotonda/i.test(t)) return 'round';
+  if (/¡|Firme/.test(t)) return 'warn';
+  if (/CAMBIO DE MEDIA|^Hito|^Señal/.test(t)) return 'hito';
+  if (/^(STOP|Ceda|Bifurcación)?:? ?izquierda|^Izquierda|a la izquierda/i.test(t)) return 'L';
+  if (/^(STOP|Ceda|Bifurcación)?:? ?derecha|^Derecha|a la derecha/i.test(t)) return 'R';
+  return 'S';
+}
+const CURVE_NAME = { H: 'Horquilla', M: 'Curva muy cerrada', C: 'Curva cerrada', m: 'Curva media' };
+function rbItems(id) {
+  const vin = ROADBOOK[id]; if (!vin) return null;
+  const tr = tramos.find((t) => t.id === id);
+  const items = vin.map((r) => {
+    let km = r[0];
+    if (km == null && r[3] && tr) { const i = tr.segs.findIndex((s) => s.hl === r[3]); const mk = run.state !== 'idle' && tramos[sel].id === id ? run.manual[i] : null; km = mk != null ? mk : (r[4] != null ? r[4] : null); }
+    const k = vinKind(r[2]);
+    const short = r[2].split(' · ')[0].replace(/ \(.*?\)/g, '').replace(/\b[A-Z]{1,2}-\d+[a-z]?\b/g, '').replace(/→/g, ',').replace(/:/g, ',')
+      .replace(/\s*,\s*/g, ', ').replace(/(,\s*)+/g, ', ').replace(/\s+/g, ' ').replace(/^[,\s]+|[,\s]+$/g, '');
+    const talk = ['L', 'R', 'uL', 'uR', 'round', 'warn', 'fin'].includes(k);
+    return { km, kind: 'v', icon: k, cls: 'v', title: r[2], n: r[1], say: !talk ? null : (k === 'fin' ? 'Fin del tramo' : short), approx: r[0] == null };
+  });
+  if (S.rbCurves !== false) (CURVAS[id] || []).forEach((c) => {
+    const [km, d, cat, rad, ang, v] = c; const dir = d === 'I' ? 'izquierda' : 'derecha';
+    items.push({ km, kind: 'c', icon: cat === 'H' ? (d === 'I' ? 'uL' : 'uR') : (d === 'I' ? 'cL' : 'cR'), cls: 'c' + cat, cat, v, rad, ang,
+      title: `${CURVE_NAME[cat]} ${dir}`, say: cat === 'm' ? null : `${cat === 'H' ? 'Horquilla' : cat === 'M' ? 'Muy cerrada' : 'Cerrada'} ${dir}` });
+  });
+  return items.filter((x) => x.km != null).sort((a, b) => a.km - b.km);
+}
+// posición sobre la traza del TC con el GPS (distancia relativa más fiable para las curvas)
+const rbTracks = {};
+function rbTrack(id) {
+  if (rbTracks[id] !== undefined) return rbTracks[id];
+  if (!mapData) return null;
+  const t = mapData.tracks.find((x) => x.name.startsWith(id + ' ·'));
+  if (!t) return (rbTracks[id] = null);
+  const cum = [0]; for (let i = 1; i < t.pts.length; i++) cum.push(cum[i - 1] + haversine({ lat: t.pts[i - 1][0], lon: t.pts[i - 1][1] }, { lat: t.pts[i][0], lon: t.pts[i][1] }) / 1000);
+  return (rbTracks[id] = { pts: t.pts, cum });
+}
+function projectOnTrack(t, p) {
+  const k = Math.cos(p.lat * Math.PI / 180), X = (q) => [(q[1] - p.lon) * 111320 * k, (q[0] - p.lat) * 110540];
+  let best = null;
+  for (let i = 0; i < t.pts.length - 1; i++) {
+    const a = X(t.pts[i]), b = X(t.pts[i + 1]); const dx = b[0] - a[0], dy = b[1] - a[1]; const L2 = dx * dx + dy * dy;
+    const u = L2 ? Math.max(0, Math.min(1, -(a[0] * dx + a[1] * dy) / L2)) : 0;
+    const d = Math.hypot(a[0] + u * dx, a[1] + u * dy);
+    if (!best || d < best.d) best = { d, km: t.cum[i] + u * (t.cum[i + 1] - t.cum[i]) };
+  }
+  return best;
+}
+let rbAt = 0, rbAlerted = new Set(), rbAlertKey = '';
+function renderRoadbook(o, force) {
+  if (!force && Date.now() - rbAt < 300) return; rbAt = Date.now();
+  if (!o) o = computeLive();
+  const id = o.tr.id; const items = rbItems(id); const card = $('#rbCard');
+  if (!items) { setT($('#rbSrc'), ''); setH($('#rbNow'), `<div></div><div class="sb">Sin roadbook para ${esc(id)} (solo TC7–TC16).</div>`); setH($('#rbList'), ''); card.classList.remove('alert'); return; }
+  const key = id + ':' + (run.startAt || 0); if (key !== rbAlertKey) { rbAlertKey = key; rbAlerted = new Set(); }
+  let pos = 0, src = 'desde la salida';
+  const t = rbTrack(id);
+  if (t && gpsValid() && gps.pos) { const pr = projectOnTrack(t, gps.pos); if (pr && pr.d < 60) { pos = pr.km; src = 'GPS sobre la traza'; } }
+  if (src === 'desde la salida' && run.state === 'running' && o.pos != null) { pos = o.pos; src = o.gpsKm != null ? 'GPS (distancia)' : 'según km ideal'; }
+  setT($('#rbSrc'), src);
+  const next = items.filter((x) => x.km >= pos - 0.015 && !(x.km === 0 && run.state === 'running' && pos > 0.05));
+  const fmtD = (d) => d <= 0.02 ? 'AHORA' : d < 1 ? `${Math.round(d * 100) * 10} m` : `${fmtKm(d).slice(0, -1)} km`;
+  const media = o.seg && o.seg.v;
+  const sub = (x) => x.kind === 'c' ? `≈${x.v} km/h${media && x.v < media - 2 ? ` · frena (media ${fmtV(media)})` : ''} · r ${x.rad} m · ${x.ang}° · del mapa`
+    : `${x.approx ? '≈' : ''}km ${fmtKm(x.km)} · viñeta ${x.n}`;
+  if (!next.length) { setH($('#rbNow'), `${rbIcon('fin', 'v')}<div><div class="dist">META</div><div class="ttl">Fin del tramo</div></div>`); setH($('#rbList'), ''); card.classList.remove('alert'); return; }
+  const n0 = next[0]; const d0 = n0.km - pos;
+  setH($('#rbNow'), `${rbIcon(n0.icon, n0.cls)}<div><div class="dist num">${fmtD(d0)}</div><div class="ttl">${esc(n0.title)}</div><div class="sb num">${esc(sub(n0))}</div></div>`);
+  setH($('#rbList'), next.slice(1, 5).map((x) => `<li>${rbIcon(x.icon, x.cls)}<span class="d num">${fmtD(x.km - pos)}</span><span class="t">${esc(x.title)}<small class="num">${esc(sub(x))}</small></span></li>`).join(''));
+  // aviso al acercarse (≈7 s antes a la velocidad actual, mínimo 120 m)
+  const spd = gps.speed != null && gpsValid() ? gps.speed : (media || 45);
+  const zone = Math.max(0.12, spd / 3600 * 7);
+  const alert = run.state === 'running' && d0 <= zone && d0 > -0.02;
+  card.classList.toggle('alert', alert);
+  if (alert) {
+    const k = n0.kind + n0.km;
+    if (!rbAlerted.has(k)) {
+      rbAlerted.add(k);
+      if (n0.say) { beep(n0.kind === 'c' && (n0.cat === 'H' || n0.cat === 'M') ? 900 : 1200, 0.07); if (S.rbVoice !== false) say(d0 > 0.06 ? `${n0.say} en ${Math.round(d0 * 100) * 10} metros` : n0.say); }
+    }
+  }
+}
+
 /* ---------- mapa desplegable (traza del GPX, viñetas y posición GPS) ---------- */
 let map = null, mapLayers = null, mapData = null, mapFollow = true, mapTc = null, mapPosMk = null, mapAccMk = null, mapPosAt = 0;
 const mapOpen = () => !$('#mapBox').classList.contains('hidden');
@@ -1369,6 +1487,7 @@ function renderLive() {
   }
   setH($('#marksList'), running ? run.marks.slice(-4).reverse().map((mk) => `${fmtT(mk.e, 1)} · <b>${fmtKm(mk.r)}</b> km → <b style="color:var(--${diffClass(mk.diff)})">${fmtDiff(mk.diff)}</b>`).join('<br>') : '');
   renderInstruments(seg);
+  renderRoadbook(o, !running);
 
   renderUpcoming(o);
 
@@ -1599,7 +1718,7 @@ function tick() {
     if (el > lastEl) { if (el - lastEl > 3) catchUp(lastEl, el); else for (const e of events) if (e.t > lastEl && e.t <= el) fireEvent(e); }
     lastEl = el;
     const o = renderLive(); updateTableCursor(o);
-  } else if ($('#tab-carrera').classList.contains('on')) renderInstruments();
+  } else if ($('#tab-carrera').classList.contains('on')) { renderInstruments(); renderRoadbook(); }
   if (run.state !== 'idle') nowPlaying();
   if ($('#tab-ajustes').classList.contains('on') && S.gpsOn) renderSettings();
 }
@@ -1876,6 +1995,7 @@ if (run.state === 'running') { buildEvents(); lastEl = (now() - run.startAt) / 1
 if (S.gpsOn) gpsStart();
 renderAll(); renderMapBtns();
 if (S.mapOpen) toggleMap(true);
+loadRouteData().catch(() => {});
 setInterval(tick, 50);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
   navigator.serviceWorker.register('sw.js').then(() => { $('#swInfo').textContent = 'Modo sin conexión: activo ✓'; }).catch(() => { $('#swInfo').textContent = 'No se pudo activar el modo sin conexión.'; });
