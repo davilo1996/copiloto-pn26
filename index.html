@@ -147,6 +147,13 @@ a.btn.acc{color:var(--accent-ink)}
 .speed-big #spdNow{font-size:clamp(80px,11vw,150px);font-weight:900;letter-spacing:-.04em;color:var(--big)}
 .speed-big #spdNow.over{color:var(--late)}
 .speed-big .unit{font-size:24px;font-weight:800;color:var(--muted)}
+.map-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;background:none;border:0;padding:4px 0;font:inherit;color:inherit;cursor:pointer}
+.map-toggle .chev{font-weight:800;font-size:14px;color:var(--accent)}
+#map{height:360px;border-radius:12px;margin-top:10px;background:var(--card2);z-index:0}
+#map.big{height:min(72vh,720px)}
+#map.dark .leaflet-tile{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}
+#map .leaflet-control-attribution{font-size:10px}
+.leaflet-tooltip.vin{font-size:13px;font-weight:700}
 .diff{font-size:clamp(44px,5.5vw,64px);font-weight:900;letter-spacing:-.03em;line-height:1}
 .diff.late{color:var(--late)} .diff.early{color:var(--early)} .diff.ok{color:var(--ok)}
 .difflbl{font-weight:900;letter-spacing:.08em;font-size:14px}
@@ -340,6 +347,18 @@ textarea.in{font-weight:500;font-size:16px;min-height:80px}
         <div class="lbl" style="justify-content:space-between"><span>Velocidad</span><span class="num" id="gpsInfo" style="text-transform:none;letter-spacing:0"></span></div>
         <div class="speed-big"><span class="num" id="spdNow">—</span><span class="unit">km/h</span></div>
         <button class="btn acc hidden" id="btnGpsOn" style="width:100%;margin-top:8px">Activar GPS</button>
+      </div>
+      <div class="card map-card" id="mapCard">
+        <button class="map-toggle" id="mapToggle" type="button"><span class="lbl">Mapa de la ruta</span><span class="chev" id="mapChev">Mostrar ▾</span></button>
+        <div id="mapBox" class="hidden">
+          <div id="map"></div>
+          <div class="row" style="margin-top:8px">
+            <button class="btn sm" id="mapFollow" type="button">Seguir mi posición</button>
+            <button class="btn sm" id="mapFit" type="button">Ver tramo</button>
+            <button class="btn sm" id="mapBig" type="button">Ampliar</button>
+          </div>
+          <p class="note" id="mapNote" style="margin:8px 0 0"></p>
+        </div>
       </div>
       <div class="card">
         <div class="lbl">Siguientes cambios</div>
@@ -914,6 +933,7 @@ function gpsStop() { if (gps.watch != null) navigator.geolocation.clearWatch(gps
 let gpsSaveAt = 0;
 function onPos(p) {
   const c = p.coords; gps.err = null; gps.acc = c.accuracy; gps.fixAt = Date.now();
+  gps.pos = { lat: c.latitude, lon: c.longitude, acc: c.accuracy };
   const pt = { lat: c.latitude, lon: c.longitude, t: p.timestamp };
   let spd = (c.speed != null && c.speed >= 0) ? c.speed * 3.6 : null;
   if (c.accuracy > 35) { gps.speed = spd; return; }
@@ -1186,7 +1206,84 @@ function renderInstruments(seg) {
   sp.classList.toggle('over', !!(run.state === 'running' && fresh && gps.speed != null && seg && seg.v != null && gps.speed > seg.v + 3));
   setT($('#gpsInfo'), !S.gpsOn ? 'GPS apagado' : gps.err ? gps.err : gps.acc != null ? `GPS ±${Math.round(gps.acc)} m${gpsValid() ? '' : ' (poca precisión)'}` : 'buscando satélites…');
   $('#btnGpsOn').classList.toggle('hidden', !!S.gpsOn);
+  if (map && mapOpen()) { drawRoute(); updateMapPos(); }
 }
+/* ---------- mapa desplegable (traza del GPX, viñetas y posición GPS) ---------- */
+let map = null, mapLayers = null, mapData = null, mapFollow = true, mapTc = null, mapPosMk = null, mapAccMk = null, mapPosAt = 0;
+const mapOpen = () => !$('#mapBox').classList.contains('hidden');
+function loadLeaflet() {
+  if (window.L) return Promise.resolve();
+  return new Promise((res, rej) => {
+    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'vendor/leaflet.css'; document.head.appendChild(l);
+    const sc = document.createElement('script'); sc.src = 'vendor/leaflet.js'; sc.onload = res; sc.onerror = rej; document.head.appendChild(sc);
+  });
+}
+async function loadRouteData() {
+  if (mapData) return mapData;
+  const x = new DOMParser().parseFromString(await (await fetch('Ruta-PN26-Etapa2.gpx')).text(), 'application/xml');
+  const tx = (el, tag) => (el.getElementsByTagName(tag)[0] || {}).textContent || '';
+  mapData = {
+    tracks: [...x.getElementsByTagName('trk')].map((t) => ({ name: tx(t, 'name'), pts: [...t.getElementsByTagName('trkpt')].map((q) => [+q.getAttribute('lat'), +q.getAttribute('lon')]) })),
+    wpts: [...x.getElementsByTagName('wpt')].map((w) => ({ ll: [+w.getAttribute('lat'), +w.getAttribute('lon')], name: tx(w, 'name'), desc: tx(w, 'desc'), type: tx(w, 'type') }))
+  };
+  return mapData;
+}
+async function toggleMap(force) {
+  const open = force != null ? force : !mapOpen();
+  $('#mapBox').classList.toggle('hidden', !open);
+  setT($('#mapChev'), open ? 'Ocultar ▴' : 'Mostrar ▾');
+  S.mapOpen = open; saveS();
+  if (!open) return;
+  try { await loadLeaflet(); await loadRouteData(); } catch (e) { setT($('#mapNote'), 'No se pudo cargar el mapa. Ábrelo una vez con internet para guardarlo.'); return; }
+  if (!map) {
+    map = L.map('map', { zoomControl: true });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, crossOrigin: true, attribution: '© OpenStreetMap' }).addTo(map);
+    map.on('dragstart', () => { mapFollow = false; renderMapBtns(); });
+  }
+  $('#map').classList.toggle('dark', effTheme() !== 'light');
+  map.invalidateSize(); mapTc = null; drawRoute(); updateMapPos(true);
+}
+function drawRoute(fit = true) {
+  if (!map || !mapData) return;
+  const id = tramos[sel].id; if (mapTc === id) return; mapTc = id;
+  if (mapLayers) mapLayers.remove();
+  mapLayers = L.layerGroup().addTo(map);
+  let focus = null; const all = [];
+  mapData.tracks.forEach((t) => {
+    const isTc = t.name.startsWith(id + ' ·');
+    const arr = t.name.startsWith('Enlace') && t.name.endsWith('→ ' + id);
+    const dep = t.name.startsWith('Enlace ' + id + ' →');
+    const style = isTc ? { color: '#e02020', weight: 6, opacity: .95 } : (arr || dep) ? { color: '#1769d1', weight: 5, opacity: .9 }
+      : t.name.startsWith('Enlace') ? { color: '#1769d1', weight: 3, opacity: .35 } : { color: '#e02020', weight: 3, opacity: .35 };
+    L.polyline(t.pts, style).bindTooltip(t.name, { sticky: true }).addTo(mapLayers);
+    all.push(...t.pts);
+    if (isTc) focus = t.pts;
+  });
+  mapData.wpts.forEach((w) => {
+    if (w.type === 'Viñeta') {
+      if (!w.name.startsWith(id + ' ·')) return;
+      L.circleMarker(w.ll, { radius: 6, color: '#fff', weight: 2, fillColor: '#ff9900', fillOpacity: 1 }).bindTooltip(w.name.slice(id.length + 3) + (w.desc ? ' · ' + w.desc : ''), { className: 'vin' }).addTo(mapLayers);
+    } else {
+      const c = w.type === 'Salida TC' ? '#12924a' : w.type === 'Fin TC' ? '#d92d20' : '#555';
+      L.circleMarker(w.ll, { radius: 8, color: '#fff', weight: 2, fillColor: c, fillOpacity: 1 }).bindTooltip(w.name + (w.desc ? '<br><small>' + esc(w.desc) + '</small>' : '')).addTo(mapLayers);
+    }
+  });
+  const hasRoute = !!focus;
+  setT($('#mapNote'), hasRoute ? `${id} en rojo, enlaces de entrada y salida en azul, viñetas en naranja (toca para ver el km). Sin cobertura se ve la traza y tu posición, pero solo el fondo de mapa que ya se haya cargado antes.`
+    : `${id} no está en el roadbook de la etapa 2: se muestra toda la ruta.`);
+  if (fit && !(mapFollow && gps.pos && run.state === 'running')) map.fitBounds(L.latLngBounds(focus || all), { padding: [20, 20] });
+}
+function updateMapPos(force) {
+  if (!map || !mapOpen() || !gps.pos || !S.gpsOn) return;
+  if (!force && Date.now() - mapPosAt < 1000) return; mapPosAt = Date.now();
+  const ll = [gps.pos.lat, gps.pos.lon];
+  if (!mapPosMk) {
+    mapAccMk = L.circle(ll, { radius: gps.pos.acc || 20, color: '#4aa8ff', weight: 1, fillOpacity: .12 }).addTo(map);
+    mapPosMk = L.circleMarker(ll, { radius: 9, color: '#fff', weight: 3, fillColor: '#1769d1', fillOpacity: 1 }).addTo(map);
+  } else { mapPosMk.setLatLng(ll); mapAccMk.setLatLng(ll).setRadius(gps.pos.acc || 20); }
+  if (mapFollow) map.setView(ll, Math.max(map.getZoom(), 15), { animate: false });
+}
+function renderMapBtns() { $('#mapFollow').classList.toggle('acc', mapFollow); }
 let flashUntil = 0;
 function flashNext() { flashUntil = Date.now() + 2500; }
 
@@ -1470,7 +1567,7 @@ function renderSettings() {
   renderBgInfo();
 }
 function renderAll() {
-  applyTheme(); autoArm(); renderSegs(); renderTcBar(); renderStartCard(); renderLive();
+  applyTheme(); autoArm(); if (map) $('#map').classList.toggle('dark', effTheme() !== 'light'); renderSegs(); renderTcBar(); renderStartCard(); renderLive();
   if ($('#tab-tabla').classList.contains('on')) { renderTable(); lastCurRow = null; }
   if ($('#tab-tramos').classList.contains('on')) renderTramos();
   if ($('#tab-ruta').classList.contains('on')) renderRoute();
@@ -1680,6 +1777,10 @@ function odoReset(k) {
 })();
 $('#odo2').addEventListener('click', () => odoReset('b'));
 $('#btnGpsOn').addEventListener('click', () => { S.gpsOn = true; saveS(); gpsStart(); renderAll(); });
+$('#mapToggle').addEventListener('click', () => toggleMap());
+$('#mapFollow').addEventListener('click', () => { mapFollow = !mapFollow; renderMapBtns(); if (mapFollow) { if (!S.gpsOn || !gps.pos) toast('Sin posición GPS todavía.'); updateMapPos(true); } });
+$('#mapFit').addEventListener('click', () => { mapFollow = false; renderMapBtns(); mapTc = null; drawRoute(true); });
+$('#mapBig').addEventListener('click', () => { const b = $('#map').classList.toggle('big'); setT($('#mapBig'), b ? 'Reducir' : 'Ampliar'); if (map) setTimeout(() => map.invalidateSize(), 50); });
 $('#tblTc').addEventListener('change', (e) => { tblSel = +e.target.value; lastCurRow = null; renderTable(); });
 $('#tblStep').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; S.tblStep = b.dataset.v === 'rb' ? 'rb' : +b.dataset.v; saveS(); renderSegs(); renderTable(); lastCurRow = null; });
 $('#tblFollow').addEventListener('click', () => { S.tblFollow = !S.tblFollow; saveS(); renderSegs(); });
@@ -1773,7 +1874,8 @@ $('#resetAll').onclick = () => toast('¿Borrar ediciones, ajustes y registro?', 
 /* ============================ arranque ============================ */
 if (run.state === 'running') { buildEvents(); lastEl = (now() - run.startAt) / 1000; }
 if (S.gpsOn) gpsStart();
-renderAll();
+renderAll(); renderMapBtns();
+if (S.mapOpen) toggleMap(true);
 setInterval(tick, 50);
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
   navigator.serviceWorker.register('sw.js').then(() => { $('#swInfo').textContent = 'Modo sin conexión: activo ✓'; }).catch(() => { $('#swInfo').textContent = 'No se pudo activar el modo sin conexión.'; });

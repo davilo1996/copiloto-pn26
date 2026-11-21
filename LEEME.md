@@ -9,6 +9,7 @@ y comprobadas contra las *Tablas comunes* oficiales (1.650 filas, diferencia má
 - `sw.js`, `manifest.webmanifest`, `icon-*.png` — para instalarla en el iPad y usarla sin conexión
 - `Tablas-PN26.numbers` / `Tablas-PN26.xlsx` — todas las tablas de respaldo en papel/Numbers (también se descargan desde *Ajustes*)
 - `Ruta-PN26-Etapa2.gpx` / `.kml` — ruta de la etapa 2 sacada del roadbook (también se descargan desde *Ruta*)
+- `vendor/leaflet.*` — librería del mapa (Leaflet 1.9.4), incluida para que funcione sin conexión
 
 ## Instalar en el iPad (sin conexión)
 Safari solo guarda una web para usarla sin conexión si se sirve por **https**. Lo más fácil:
@@ -44,6 +45,11 @@ La pestaña **Carrera** tiene dos columnas: a la izquierda los datos del TC y a 
 - **Velocidad** actual en km/h (en rojo si vas más de 3 km/h por encima de la media).
 - **Siguientes cambios** de media.
 - El GPS se enciende con el botón **Activar GPS** o en *Ajustes*. Solo los iPad con datos móviles tienen GPS.
+- **Mapa de la ruta** (desplegable, cerrado por defecto: toca «Mostrar ▾»). Muestra la traza del GPX, con el TC elegido en rojo,
+  los enlaces de entrada y salida en azul, las viñetas en naranja (toca una para ver el km) y tu posición GPS.
+  Botones **Seguir mi posición**, **Ver tramo** y **Ampliar**. Al arrastrar el mapa deja de seguirte.
+  Sin cobertura se ven la traza y tu posición, pero solo el fondo de mapa que ya se haya visto con internet.
+  Antes de la carrera, con wifi, recorre los tramos en el mapa para que se guarde el fondo.
 
 ## Tabla por viñetas del roadbook (TC7–TC16)
 En **Tablas → Viñetas** cada TC sale con las viñetas del roadbook y los cambios de media: km, nº de viñeta, indicación,
