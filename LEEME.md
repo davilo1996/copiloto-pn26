@@ -22,16 +22,28 @@ Safari solo guarda una web para usarla sin conexión si se sirve por **https**. 
 > Si cambias algo en los archivos, abre la app dos veces con internet para que se actualice.
 
 ## Cómo se usa en carrera
-1. Elige **SECO / LLUVIA** (arriba a la derecha) según lo que diga la organización.
-2. Elige el tramo (TC1…TC16).
-3. Pon la **hora de salida** y pulsa **ARMAR**: cuenta atrás con pitidos y el crono arranca solo a la hora exacta.
-   O pulsa **SALIDA YA** en el momento de salir.
-4. En pantalla: **media actual** en grande, **próximo cambio** (km y cuenta atrás), km ideal, crono y lo que falta.
-   Aviso con pitido y voz unos segundos antes de cada cambio de media.
-5. **Comprobación**: toca el botón naranja **«Toca al pasar por X,XXX»** cuando el tripmaster marque esa distancia,
-   o pulsa **MARCA** y teclea la lectura. Verás el **adelanto o retraso** en segundos y a qué velocidad ir para corregirlo en 500 m.
-6. **Pantalla piloto**: solo la media y el próximo cambio, en grande.
-7. **TERMINAR** guarda el tramo en el **Registro** (se puede exportar en CSV).
+La pestaña **Carrera** tiene dos columnas: a la izquierda los datos del TC y a la derecha los instrumentos.
+
+**Izquierda (TC)**
+1. Elige **SECO / LLUVIA** y el tramo (TC1…TC16).
+2. Toca **HORA DE SALIDA** y tecléala: la cuenta atrás empieza sola, con pitidos, y el crono arranca a esa hora exacta.
+   Ya no hay botón ARMAR. Si sales antes o la hora ya pasó, pulsa **SALIDA YA**. **Cancelar** borra la hora prevista.
+3. **Media** impuesta en grande (la que vale ahora), **media del tramo** (km totales ÷ tiempo ideal)
+   y **tu media real** desde la salida, en verde, rojo o azul según vayas en, por encima o por debajo de la media ideal hasta ese km.
+4. **Próximo cambio** de media, con aviso por pitido y voz.
+5. **Adelanto / retraso** en segundos (ADELANTO → frena, RETRASO → acelera) y la velocidad para corregirlo en 500 m.
+   Con GPS se calcula en directo; sin GPS, con el último km registrado.
+6. **REGISTRAR KM**: toca el botón cuando leas el tripmaster (la hora se guarda en ese instante) y luego
+   teclea la lectura (sin coma: 5432 = 5,432) o toca una sugerencia: GPS, viñetas del roadbook cercanas o el km redondo.
+7. **Crono**, **km ideal** y **resta**, como antes. **Pantalla piloto** y **TERMINAR** (guarda en el **Registro**).
+
+**Derecha (instrumentos)**
+- **Hora** actual HH:MM:SS (con la corrección de *Ajustes → Hora oficial*).
+- **ODO 1** (total): **mantén pulsado** para ponerlo a cero. **ODO 2** (parcial): **toca** para ponerlo a cero.
+  Los dos dan unos segundos para **Deshacer**, cuentan con el GPS y aplican el factor GPS de *Ajustes*.
+- **Velocidad** actual en km/h (en rojo si vas más de 3 km/h por encima de la media).
+- **Siguientes cambios** de media.
+- El GPS se enciende con el botón **Activar GPS** o en *Ajustes*. Solo los iPad con datos móviles tienen GPS.
 
 ## Tabla por viñetas del roadbook (TC7–TC16)
 En **Tablas → Viñetas** cada TC sale con las viñetas del roadbook y los cambios de media: km, nº de viñeta, indicación,
@@ -67,7 +79,7 @@ También se descargan `Ruta-PN26-Etapa2.gpx` (para OsmAnd, Guru Maps o Gaia GPS,
   copia de seguridad (exportar e importar).
 
 ## Con el iPad bloqueado
-- Al **ARMAR** o dar **SALIDA**, la app pone un audio de fondo inaudible para que iOS no la congele: los pitidos siguen sonando
+- Con la cuenta atrás en marcha o al dar **SALIDA**, la app pone un audio de fondo inaudible para que iOS no la congele: los pitidos siguen sonando
   y la **pantalla de bloqueo muestra la media actual y el próximo cambio** (como si fuera música).
 - Se puede desactivar en *Ajustes → Avisos → Seguir avisando con el iPad bloqueado*.
 - Lo más seguro es no bloquear: *Ajustes del iPad → Pantalla y brillo → Bloqueo automático → Nunca*.

@@ -97,7 +97,7 @@ a.btn.acc{color:var(--accent-ink)}
 .tcbar button .dot.d{background:var(--ok)}
 
 /* ---------- pantalla carrera ---------- */
-.race{display:grid;grid-template-columns:1.3fr 1fr;gap:12px}
+.race{display:grid;grid-template-columns:1.35fr 1fr;gap:12px;align-items:start}
 .col{display:flex;flex-direction:column;gap:12px;min-width:0}
 .media-card{padding-bottom:10px}
 .media-big{display:flex;align-items:baseline;gap:10px;line-height:.9;margin:4px 0 6px}
@@ -127,9 +127,26 @@ a.btn.acc{color:var(--accent-ink)}
 .timebtn{border:1px dashed var(--line);background:var(--card2);border-radius:14px;padding:8px 14px;font-weight:900;font-size:38px;letter-spacing:.01em;width:100%;text-align:left}
 .timebtn small{display:block;font-size:12px;color:var(--muted);letter-spacing:.08em;font-weight:800}
 
-.refbtn{width:100%;border:0;border-radius:16px;background:var(--accent);color:var(--accent-ink);padding:12px 14px;text-align:left;min-height:86px}
-.refbtn small{display:block;font-size:13px;font-weight:800;letter-spacing:.08em;opacity:.8}
-.refbtn b{font-size:44px;font-weight:900;letter-spacing:-.02em}
+.kmbtn{width:100%;border:0;border-radius:16px;background:var(--accent);color:var(--accent-ink);padding:14px;margin-top:14px;min-height:88px;text-align:center}
+.kmbtn b{display:block;font-size:32px;font-weight:900;letter-spacing:.03em}
+.kmbtn small{display:block;font-size:13px;font-weight:700;opacity:.85;margin-top:2px}
+.kmbtn:disabled{opacity:.4}
+.kmbtn:active{transform:scale(.99);filter:brightness(1.08)}
+.vrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.vv{font-size:clamp(28px,3.4vw,42px);font-weight:900;letter-spacing:-.02em;margin-top:2px}
+.bigclock{font-size:clamp(46px,6.4vw,86px);font-weight:900;letter-spacing:-.02em;line-height:1;margin-top:4px}
+.odos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.odo{font:inherit;color:inherit;text-align:left;overflow:hidden;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+.odo .odo-v{font-size:clamp(36px,4.8vw,64px);font-weight:900;letter-spacing:-.03em;line-height:1;margin:8px 0 6px}
+.odo .hint{font-size:12px;color:var(--muted);font-weight:700}
+.odo .hold{position:absolute;left:0;bottom:0;height:6px;width:0;background:var(--accent)}
+.odo.holding .hold{width:100%;transition:width .7s linear}
+.odo.off .odo-v{color:var(--muted)}
+.odo:active{filter:brightness(1.08)}
+.speed-big{display:flex;align-items:baseline;gap:10px;line-height:.9;margin:6px 0 2px}
+.speed-big #spdNow{font-size:clamp(80px,11vw,150px);font-weight:900;letter-spacing:-.04em;color:var(--big)}
+.speed-big #spdNow.over{color:var(--late)}
+.speed-big .unit{font-size:24px;font-weight:800;color:var(--muted)}
 .diff{font-size:clamp(44px,5.5vw,64px);font-weight:900;letter-spacing:-.03em;line-height:1}
 .diff.late{color:var(--late)} .diff.early{color:var(--early)} .diff.ok{color:var(--ok)}
 .difflbl{font-weight:900;letter-spacing:.08em;font-size:14px}
@@ -223,8 +240,8 @@ textarea.in{font-weight:500;font-size:16px;min-height:80px}
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:12px 18px;border-radius:14px;font-weight:700;z-index:80;max-width:90vw;display:flex;gap:14px;align-items:center;box-shadow:0 8px 30px rgba(0,0,0,.3)}
 #toast button{border:0;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:8px 12px;font-weight:800}
 
+@media (max-width:700px){ .race{grid-template-columns:1fr} }
 @media (max-width:900px), (orientation:portrait){
-  .race{grid-template-columns:1fr}
   .brand{display:none}
   nav.tabs{margin-left:0}
 }
@@ -263,14 +280,18 @@ textarea.in{font-weight:500;font-size:16px;min-height:80px}
 <section id="tab-carrera" class="on">
   <div class="tcbar" id="tcbar"></div>
   <div class="race">
+    <!-- IZQUIERDA: datos del TC -->
     <div class="col">
+      <div class="card" id="startCard"></div>
+
       <div class="card media-card">
         <div class="lbl"><span id="segInfo">MEDIA</span></div>
         <div class="tag" id="mediaTags"></div>
         <div class="media-big"><span id="mediaNow" class="num">--</span><span class="unit">km/h</span></div>
-        <div class="row" style="justify-content:space-between">
-          <div class="sub num" id="segRange"></div>
-          <div class="gpsspd num hidden" id="gpsSpeed"></div>
+        <div class="sub num" id="segRange"></div>
+        <div class="vrow">
+          <div><div class="lbl">Media del tramo</div><div class="vv num" id="vTramo">—</div><div class="sub num" id="vTramoSub"></div></div>
+          <div><div class="lbl">Tu media real</div><div class="vv num" id="vReal">—</div><div class="sub num" id="vRealSub"></div></div>
         </div>
         <div id="mediaWarn" class="warnbox hidden"></div>
       </div>
@@ -288,41 +309,38 @@ textarea.in{font-weight:500;font-size:16px;min-height:80px}
         <button id="btnHito" class="btn big acc hidden" style="width:100%;margin-top:12px"></button>
       </div>
 
+      <div class="card" id="checkCard">
+        <div class="lbl" style="justify-content:space-between"><span>Adelanto / retraso</span><span class="num" id="diffSrc" style="text-transform:none;letter-spacing:0"></span></div>
+        <div class="row" style="margin-top:8px;align-items:flex-end;justify-content:space-between">
+          <div>
+            <div class="diff num" id="diffVal">—</div>
+            <div class="difflbl" id="diffLbl">SIN DATOS</div>
+          </div>
+          <div class="sub num" id="recover" style="text-align:right"></div>
+        </div>
+        <button class="kmbtn" id="btnKm"><b>REGISTRAR KM</b><small id="kmHint">Toca al leer el tripmaster: se guarda la hora exacta del toque</small></button>
+        <div class="marks num" id="marksList"></div>
+      </div>
+
       <div class="stats">
-        <div class="card stat"><div class="lbl">Km ideal</div><div class="val num" id="kmIdeal">0,000</div><div class="sub num" id="kmGps"></div></div>
         <div class="card stat"><div class="lbl">Crono</div><div class="val num" id="chrono">0:00,0</div><div class="sub num" id="chronoSub"></div></div>
+        <div class="card stat"><div class="lbl">Km ideal</div><div class="val num" id="kmIdeal">0,000</div><div class="sub num" id="kmGps"></div></div>
         <div class="card stat"><div class="lbl">Resta</div><div class="val num" id="remain">--</div><div class="sub num" id="eta"></div></div>
       </div>
     </div>
 
+    <!-- DERECHA: instrumentos -->
     <div class="col">
-      <div class="card" id="startCard"></div>
-
-      <div class="card" id="checkCard">
-        <div class="lbl">Comprobación con tripmaster</div>
-        <div style="display:grid;grid-template-columns:1.25fr 1fr;gap:10px;margin-top:8px">
-          <button class="refbtn" id="btnRef"><small>TOCA AL PASAR POR</small><b class="num" id="refKm">0,100</b></button>
-          <button class="btn" id="btnMark" style="min-height:86px">MARCA<br><span class="sub" style="font-size:13px">y teclear lectura</span></button>
-        </div>
-        <div class="row" style="margin-top:12px;align-items:flex-end;justify-content:space-between">
-          <div>
-            <div class="diff num" id="diffVal">—</div>
-            <div class="difflbl" id="diffLbl">SIN MARCAS</div>
-          </div>
-          <div class="sub num" id="recover" style="text-align:right"></div>
-        </div>
-        <div class="marks num" id="marksList"></div>
-        <div id="gpsLive" class="hidden" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">
-          <div class="row" style="justify-content:space-between">
-            <span class="lbl">GPS en directo</span><span class="sub num" id="gpsInfo"></span>
-          </div>
-          <div class="row" style="justify-content:space-between;align-items:baseline">
-            <div class="diff num" id="gpsDiff" style="font-size:40px">—</div>
-            <div class="difflbl" id="gpsDiffLbl"></div>
-          </div>
-        </div>
+      <div class="card"><div class="lbl">Hora</div><div class="bigclock num" id="hereClock">--:--:--</div></div>
+      <div class="odos">
+        <button class="card odo" id="odo1" type="button"><div class="lbl">ODO 1 · total</div><div class="odo-v num" id="odo1v">0,00</div><div class="hint">Mantén pulsado para poner a cero</div><i class="hold"></i></button>
+        <button class="card odo" id="odo2" type="button"><div class="lbl">ODO 2 · parcial</div><div class="odo-v num" id="odo2v">0,00</div><div class="hint">Toca para poner a cero</div></button>
       </div>
-
+      <div class="card speed-card">
+        <div class="lbl" style="justify-content:space-between"><span>Velocidad</span><span class="num" id="gpsInfo" style="text-transform:none;letter-spacing:0"></span></div>
+        <div class="speed-big"><span class="num" id="spdNow">—</span><span class="unit">km/h</span></div>
+        <button class="btn acc hidden" id="btnGpsOn" style="width:100%;margin-top:8px">Activar GPS</button>
+      </div>
       <div class="card">
         <div class="lbl">Siguientes cambios</div>
         <ul class="upl" id="upList"></ul>
@@ -413,15 +431,12 @@ textarea.in{font-weight:500;font-size:16px;min-height:80px}
       <div class="switch">Mantener pantalla encendida <button class="tog" data-set="wake"></button></div>
       <div class="switch">Seguir avisando con el iPad bloqueado <button class="tog" data-set="bg"></button></div>
       <p class="note" id="bgInfo"></p>
-      <p class="note">Al <b>ARMAR</b> o dar <b>SALIDA</b>, la app pone un audio de fondo inaudible: así iOS no la congela si se bloquea la pantalla, los pitidos siguen sonando y la <b>pantalla de bloqueo muestra la media y el próximo cambio</b>. Lo más seguro sigue siendo no bloquear: en el iPad, <i>Ajustes → Pantalla y brillo → Bloqueo automático → Nunca</i>. Aunque se congele, el crono va por la hora, así que al volver está bien y te dice la media actual.</p>
+      <p class="note">Con la cuenta atrás en marcha o en tramo, la app pone un audio de fondo inaudible: así iOS no la congela si se bloquea la pantalla, los pitidos siguen sonando y la <b>pantalla de bloqueo muestra la media y el próximo cambio</b>. Lo más seguro sigue siendo no bloquear: en el iPad, <i>Ajustes → Pantalla y brillo → Bloqueo automático → Nunca</i>. Aunque se congele, el crono va por la hora, así que al volver está bien y te dice la media actual.</p>
       <div class="field" style="margin-top:8px"><label>Aviso previo al cambio de media</label>
         <div class="seg" id="leadSeg"><button data-v="5">5 s</button><button data-v="10">10 s</button><button data-v="15">15 s</button><button data-v="20">20 s</button></div>
       </div>
       <div class="field"><label>Pitido suave en cada referencia de distancia</label>
         <div class="seg" id="refBeepSeg"><button data-v="0">No</button><button data-v="0.1">100 m</button><button data-v="0.2">200 m</button><button data-v="0.5">500 m</button><button data-v="1">1 km</button></div>
-      </div>
-      <div class="field"><label>Paso de la referencia "Toca al pasar por"</label>
-        <div class="seg" id="refStepSeg"><button data-v="0.1">100 m</button><button data-v="0.2">200 m</button><button data-v="0.5">500 m</button><button data-v="1">1 km</button></div>
       </div>
       <button class="btn sm" id="testSound">Probar sonido y voz</button>
     </div>
@@ -857,7 +872,7 @@ function renderBgInfo() {
   const el = document.getElementById('bgInfo'); if (!el) return;
   el.textContent = !S.bg ? 'Desactivado: con la pantalla bloqueada la app se congela (el crono sigue siendo correcto al volver).'
     : bgOn ? 'Activo ✓ — la app sigue avisando con la pantalla bloqueada.'
-    : 'Se activa solo al pulsar ARMAR o SALIDA YA.';
+    : 'Se activa sola con la cuenta atrás o con SALIDA YA.';
 }
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') { hiddenAt = Date.now(); return; }
@@ -880,6 +895,10 @@ function catchUp(from, to) {
 
 /* ============================ GPS ============================ */
 const gps = { watch: null, last: null, acc: null, speed: null, fixAt: 0, err: null };
+// Odómetros ODO 1 (total) y ODO 2 (parcial): km GPS sin factor; se muestran × factor GPS
+const odo = Object.assign({ a: 0, b: 0 }, store.get('odo', {}));
+let odoSaveAt = 0;
+const saveOdo = () => store.set('odo', odo);
 function haversine(p, q) {
   const R = 6371000, r = Math.PI / 180;
   const dLat = (q.lat - p.lat) * r, dLon = (q.lon - p.lon) * r;
@@ -901,8 +920,13 @@ function onPos(p) {
   if (gps.last) {
     const dm = haversine(gps.last, pt), dt = (pt.t - gps.last.t) / 1000;
     if (spd == null && dt > 0) spd = dm / dt * 3.6;
-    if (dm >= Math.max(4, c.accuracy * 0.3)) {
-      if (dt > 0 && dm / dt < 55) { if (run.state === 'running') run.gpsKm += dm / 1000; }
+    const parado = c.speed != null && c.speed >= 0 && c.speed < 0.7 && dm < 15; // evita sumar el "baile" del GPS con el coche quieto
+    if (!parado && dm >= Math.max(4, c.accuracy * 0.3)) {
+      if (dt > 0 && dm / dt < 55) {
+        if (run.state === 'running') run.gpsKm += dm / 1000;
+        odo.a += dm / 1000; odo.b += dm / 1000;
+        if (Date.now() - odoSaveAt > 3000) { odoSaveAt = Date.now(); saveOdo(); }
+      }
       gps.last = pt;
     }
   } else gps.last = pt;
@@ -972,7 +996,22 @@ function startNow(at) {
   renderAll();
 }
 function cancelRun() {
+  if (run.state === 'armed') { delete salidas[tramos[sel].id]; store.set('salidas', salidas); }
   run = Object.assign(EMPTY_RUN(), { tc: sel }); saveRun(); bgStop(); renderAll();
+}
+// Sin botón ARMAR: si el tramo tiene hora de salida futura, la cuenta atrás empieza sola.
+function autoArm() {
+  if (run.state !== 'idle') return;
+  const p = parseClock(salidas[tramos[sel].id]); if (p == null) return;
+  const base = new Date(now()); base.setHours(0, 0, 0, 0);
+  if (base.getTime() + p * 1000 > now() + 1500) armAt(p);
+}
+function setStartTime(v) {
+  const id = tramos[sel].id; const s = secToClock(v);
+  salidas[id] = s; store.set('salidas', salidas); store.set('lastStart', s);
+  const base = new Date(now()); base.setHours(0, 0, 0, 0);
+  if (base.getTime() + v * 1000 > now() + 1500) { run = Object.assign(EMPTY_RUN(), { tc: sel }); armAt(v); }
+  else { if (run.state === 'armed') { run = Object.assign(EMPTY_RUN(), { tc: sel }); saveRun(); } toast('Esa hora ya ha pasado. Si ya has salido, pulsa SALIDA YA.'); renderAll(); }
 }
 function finishRun() {
   const m = curModel(); const end = now();
@@ -1086,15 +1125,17 @@ function renderTcBar() {
 function renderStartCard() {
   const tr = tramos[sel], m = curModel(), T = idealTime(m, lengthOf(m));
   const card = $('#startCard'); const st = run.state;
-  const planned = salidas[tr.id] || store.get('lastStart', '');
+  const planned = salidas[tr.id] || '';
+  const badges = `${tr.lanzada ? '<span class="badge acc">Lanzada</span>' : ''}<span class="badge ${S.cond === 'lluvia' ? 'blue' : 'acc'}">${S.cond}</span>`;
   let h = '';
   if (st === 'idle') {
-    h = `<div class="lbl">Salida ${esc(tr.id)} ${tr.lanzada ? '<span class="badge acc">Lanzada</span>' : ''}</div>
-      <div style="margin:10px 0"><button class="timebtn num" id="btnStartTime"><small>HORA DE SALIDA</small>${esc(planned || '--:--:--')}</button></div>
-      <div class="row"><button class="btn acc big" id="btnArm">ARMAR</button><button class="btn go big" id="btnGo">SALIDA YA</button></div>
-      <p class="note" style="margin:10px 0 0">Armado: cuenta atrás con pitidos y arranca solo a la hora exacta. ${T != null ? 'Tiempo ideal: <b>' + fmtT(T, 1) + '</b>' : ''}</p>`;
+    h = `<div class="lbl">${esc(tr.id)} · salida ${badges}</div>
+      <div style="margin:10px 0"><button class="timebtn num" id="btnStartTime"><small>HORA DE SALIDA · toca para ponerla</small>${esc(planned || '--:--:--')}</button></div>
+      <div class="row"><button class="btn go big" id="btnGo">SALIDA YA</button></div>
+      <p class="note" style="margin:10px 0 0">Al poner la hora empieza la cuenta atrás con pitidos y el crono arranca solo a esa hora. ${T != null ? 'Tiempo ideal: <b>' + ap(m) + fmtT(T, 1) + '</b>' : ''}</p>`;
   } else if (st === 'armed') {
-    h = `<div class="lbl">Salida ${esc(tr.id)} a las ${fmtClock(run.armedAt)}</div>
+    h = `<div class="lbl">${esc(tr.id)} · salida ${badges}</div>
+      <div style="margin:10px 0 4px"><button class="timebtn num" id="btnStartTime"><small>HORA DE SALIDA · toca para cambiarla</small>${fmtClock(run.armedAt)}</button></div>
       <div class="countdown num" id="cdVal">--</div>
       <div class="row">
         <button class="btn sm" data-adj="-60000">−1 min</button><button class="btn sm" data-adj="60000">+1 min</button>
@@ -1102,9 +1143,10 @@ function renderStartCard() {
       </div>
       <div class="row" style="margin-top:8px"><button class="btn" id="btnCancel">Cancelar</button><button class="btn go" id="btnGo">SALIDA YA</button></div>`;
   } else {
-    h = `<div class="lbl">En tramo ${esc(tr.id)} <span class="badge ${S.cond === 'lluvia' ? 'blue' : 'acc'}">${S.cond}</span></div>
-      <div class="row" style="justify-content:space-between;margin:6px 0 8px">
-        <div class="sub num">Salida ${fmtClock(run.startAt)}${T != null ? ' · Llegada ideal <b style="color:var(--text)">' + ap(m) + fmtClock(run.startAt + T * 1000) + '</b>' : ''}</div>
+    h = `<div class="lbl">En tramo ${esc(tr.id)} ${badges}</div>
+      <div class="row" style="justify-content:space-between;margin:6px 0 8px;align-items:baseline">
+        <div><div class="sub">Hora de salida</div><div class="num" style="font-size:34px;font-weight:900">${fmtClock(run.startAt)}</div></div>
+        ${T != null ? `<div style="text-align:right"><div class="sub">Llegada ideal</div><div class="num" style="font-size:26px;font-weight:800">${ap(m)}${fmtClock(run.startAt + T * 1000)}</div></div>` : ''}
       </div>
       <div class="row">
         <button class="btn sm" data-adj="-1000">−1 s</button><button class="btn sm" data-adj="-100">−0,1</button>
@@ -1132,6 +1174,19 @@ function renderUpcoming(o) {
   }
   setH($('#upList'), items.join(''));
 }
+function renderInstruments(seg) {
+  setT($('#hereClock'), fmtClock(now()));
+  const f = S.gpsFactor || 1; const fresh = S.gpsOn && gps.fixAt && Date.now() - gps.fixAt < 6000;
+  setT($('#odo1v'), (odo.a * f).toFixed(2).replace('.', ','));
+  setT($('#odo2v'), (odo.b * f).toFixed(2).replace('.', ','));
+  $('#odo1').classList.toggle('off', !fresh); $('#odo2').classList.toggle('off', !fresh);
+  const sp = $('#spdNow');
+  setT(sp, fresh && gps.speed != null ? String(Math.round(gps.speed)) : '—');
+  if (seg === undefined) seg = computeLive().seg;
+  sp.classList.toggle('over', !!(run.state === 'running' && fresh && gps.speed != null && seg && seg.v != null && gps.speed > seg.v + 3));
+  setT($('#gpsInfo'), !S.gpsOn ? 'GPS apagado' : gps.err ? gps.err : gps.acc != null ? `GPS ±${Math.round(gps.acc)} m${gpsValid() ? '' : ' (poca precisión)'}` : 'buscando satélites…');
+  $('#btnGpsOn').classList.toggle('hidden', !!S.gpsOn);
+}
 let flashUntil = 0;
 function flashNext() { flashUntil = Date.now() + 2500; }
 
@@ -1147,9 +1202,17 @@ function renderLive() {
   const a = seg.a != null ? fmtKm(seg.a) : (seg.aLabel || '?'), b = seg.b != null ? fmtKm(seg.b) : (seg.bLabel || '?');
   setT($('#segRange'), `${a} → ${b} km`);
   setH($('#mediaTags'), (tr.lanzada ? '<span class="badge acc">Lanzada</span>' : '') + `<span class="badge ${S.cond === 'lluvia' ? 'blue' : ''}">${S.cond}</span>`);
-  const gs = $('#gpsSpeed');
-  if (S.gpsOn && gps.speed != null && gpsValid()) { gs.classList.remove('hidden'); setT(gs, `GPS ${Math.round(gps.speed)} km/h`); gs.style.color = seg.v != null && gps.speed > seg.v + 3 ? 'var(--late)' : ''; }
-  else gs.classList.add('hidden');
+  // media global del tramo y media real desde la salida
+  setT($('#vTramo'), o.total != null && o.L ? ap(o.m) + fmtV(Math.round(o.L / (o.total / 3600) * 100) / 100) : '—');
+  setT($('#vTramoSub'), o.total != null ? `${fmtKm(o.L)} km en ${ap(o.m)}${fmtT(o.total, 0)}` : 'faltan medias');
+  const lastMk = run.marks[run.marks.length - 1];
+  let vr = null, vrSrc = '', vrKm = null;
+  if (running && o.gpsKm != null && o.el > 20 && o.gpsKm > 0.05) { vr = o.gpsKm / (o.el / 3600); vrKm = o.gpsKm; vrSrc = 'GPS'; }
+  else if (running && lastMk && lastMk.e > 5) { vr = lastMk.km / (lastMk.e / 3600); vrKm = lastMk.km; vrSrc = `hasta ${fmtKm(lastMk.r)} km`; }
+  const vIdeal = vrKm != null && idealTime(o.m, vrKm) ? vrKm / (idealTime(o.m, vrKm) / 3600) : null; // media ideal hasta ese km
+  const vre = $('#vReal'); setT(vre, vr != null ? fmtV(Math.round(vr * 10) / 10) : '—');
+  vre.style.color = vr != null && vIdeal != null ? (vr > vIdeal + 0.5 ? 'var(--late)' : vr < vIdeal - 0.5 ? 'var(--early)' : 'var(--ok)') : '';
+  setT($('#vRealSub'), running ? (vr != null ? `${vrSrc}${vIdeal != null ? ' · ideal ' + fmtV(Math.round(vIdeal * 10) / 10) : ''}` : 'registra un km o activa el GPS') : 'en tramo');
   const warn = $('#mediaWarn'); const iss = tramoIssues(tr, S.cond);
   if (seg.v == null) { warn.classList.remove('hidden'); setT(warn, `${seg.note || 'Sin media'}: este tramo no tiene media definida. Introdúcela en Tramos → Editar (o sigue el libro de ruta).`); }
   else if (!running && iss.length) { warn.classList.remove('hidden'); setT(warn, 'Atención: ' + iss.join(' · ')); }
@@ -1184,37 +1247,31 @@ function renderLive() {
   setT($('#remain'), o.remain != null ? apx + fmtT(o.remain, 0) : (o.total != null ? apx + fmtT(o.total, 0) : '—'));
   setT($('#eta'), running && o.total != null ? 'llegada ' + apx + fmtClock(run.startAt + o.total * 1000) : (o.total != null ? (apx ? 'aprox. (hitos sin km)' : 'tiempo ideal') : 'faltan datos'));
 
-  // comprobación
-  const refBtn = $('#btnRef');
-  const target = running && o.pos != null ? refTarget(o.pos) : refTarget(0);
-  refBtn.dataset.km = target; setT($('#refKm'), fmtKm(target));
-  refBtn.disabled = !running; $('#btnMark').disabled = !running;
-  refBtn.style.opacity = running ? 1 : .45; $('#btnMark').style.opacity = running ? 1 : .45;
+  // adelanto / retraso: GPS en directo si hay señal; si no, la última marca de km
   const lastM = run.marks[run.marks.length - 1];
-  const dv = $('#diffVal');
-  if (lastM && running) {
-    setT(dv, fmtDiff(lastM.diff)); dv.className = 'diff num ' + diffClass(lastM.diff);
-    const lb = $('#diffLbl'); setT(lb, `${diffWord(lastM.diff)} · ${fmtKm(lastM.r)} km`); lb.style.color = `var(--${diffClass(lastM.diff) === 'ok' ? 'ok' : diffClass(lastM.diff)})`;
-    // velocidad para recuperar en 500 m
+  const kb = $('#btnKm'); kb.disabled = !running;
+  setT($('#kmHint'), running ? 'Toca al leer el tripmaster: se guarda la hora exacta del toque' : 'Disponible al salir');
+  const dv = $('#diffVal'), lb = $('#diffLbl');
+  let d = null, src = '';
+  if (running && o.gpsDiff != null) { d = o.gpsDiff; src = `GPS en directo · ${fmtKm(o.gpsKm)} km`; }
+  else if (running && lastM) { d = lastM.diff; src = `marca ${fmtKm(lastM.r)} km · hace ${fmtT(o.el - lastM.e, 0)}`; }
+  setT($('#diffSrc'), src);
+  if (d != null) {
+    setT(dv, fmtDiff(d)); dv.className = 'diff num ' + diffClass(d);
+    setT(lb, diffWord(d) + (Math.abs(d) >= 0.3 ? (d > 0 ? ' · ACELERA' : ' · FRENA') : '')); lb.style.color = `var(--${diffClass(d)})`;
     const v = seg.v; const Lr = 0.5;
-    if (v && Math.abs(lastM.diff) >= 0.3) {
-      const need = Lr / v * 3600 - lastM.diff;
+    if (v && Math.abs(d) >= 0.3) {
+      const need = Lr / v * 3600 - d;
       const sp = need > 0 ? Lr / (need / 3600) : null;
-      setH($('#recover'), sp ? `Para corregir en 500 m<br><b style="font-size:26px;color:${sp > 50 ? 'var(--late)' : 'var(--text)'}">${fmtV(Math.round(sp * 10) / 10)} km/h</b>` : '');
+      setH($('#recover'), sp ? `Para corregir en 500 m<br><b style="font-size:28px;color:${sp > 50 ? 'var(--late)' : 'var(--text)'}">${fmtV(Math.round(sp * 10) / 10)} km/h</b>` : '');
     } else setH($('#recover'), '');
-    setH($('#marksList'), run.marks.slice(-4).reverse().map((mk) => `${fmtT(mk.e, 1)} · <b>${fmtKm(mk.r)}</b> km → <b style="color:var(--${diffClass(mk.diff)})">${fmtDiff(mk.diff)}</b>`).join('<br>'));
   } else {
-    setT(dv, '—'); dv.className = 'diff num'; setT($('#diffLbl'), running ? 'TOCA AL PASAR LA REFERENCIA' : 'SIN MARCAS'); $('#diffLbl').style.color = '';
-    setH($('#recover'), ''); setH($('#marksList'), '');
+    setT(dv, '—'); dv.className = 'diff num'; lb.style.color = '';
+    setT(lb, running ? (S.gpsOn ? 'ESPERANDO GPS O UNA MARCA' : 'REGISTRA EL KM PARA VERLO') : 'SIN DATOS');
+    setH($('#recover'), '');
   }
-  const gl = $('#gpsLive');
-  if (S.gpsOn) {
-    gl.classList.remove('hidden');
-    setT($('#gpsInfo'), gps.err ? gps.err : gps.acc != null ? `±${Math.round(gps.acc)} m${gpsValid() ? '' : ' (sin precisión)'}` : 'buscando…');
-    const gd = $('#gpsDiff');
-    if (running && o.gpsDiff != null) { setT(gd, fmtDiff(o.gpsDiff)); gd.className = 'diff num ' + diffClass(o.gpsDiff); setT($('#gpsDiffLbl'), diffWord(o.gpsDiff)); }
-    else { setT(gd, '—'); gd.className = 'diff num'; setT($('#gpsDiffLbl'), ''); }
-  } else gl.classList.add('hidden');
+  setH($('#marksList'), running ? run.marks.slice(-4).reverse().map((mk) => `${fmtT(mk.e, 1)} · <b>${fmtKm(mk.r)}</b> km → <b style="color:var(--${diffClass(mk.diff)})">${fmtDiff(mk.diff)}</b>`).join('<br>') : '');
+  renderInstruments(seg);
 
   renderUpcoming(o);
 
@@ -1413,7 +1470,7 @@ function renderSettings() {
   renderBgInfo();
 }
 function renderAll() {
-  applyTheme(); renderSegs(); renderTcBar(); renderStartCard(); renderLive();
+  applyTheme(); autoArm(); renderSegs(); renderTcBar(); renderStartCard(); renderLive();
   if ($('#tab-tabla').classList.contains('on')) { renderTable(); lastCurRow = null; }
   if ($('#tab-tramos').classList.contains('on')) renderTramos();
   if ($('#tab-ruta').classList.contains('on')) renderRoute();
@@ -1445,7 +1502,7 @@ function tick() {
     if (el > lastEl) { if (el - lastEl > 3) catchUp(lastEl, el); else for (const e of events) if (e.t > lastEl && e.t <= el) fireEvent(e); }
     lastEl = el;
     const o = renderLive(); updateTableCursor(o);
-  }
+  } else if ($('#tab-carrera').classList.contains('on')) renderInstruments();
   if (run.state !== 'idle') nowPlaying();
   if ($('#tab-ajustes').classList.contains('on') && S.gpsOn) renderSettings();
 }
@@ -1583,12 +1640,7 @@ $('#tcbar').addEventListener('click', (e) => { const b = e.target.closest('[data
 $('#startCard').addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.id === 'btnStartTime') {
-    openKeypad({ title: `Hora de salida de ${tramos[sel].id}`, mode: 'time', onOk: (v) => { const s = secToClock(v); salidas[tramos[sel].id] = s; store.set('salidas', salidas); store.set('lastStart', s); renderAll(); } });
-  } else if (b.id === 'btnArm') {
-    const s = salidas[tramos[sel].id] || store.get('lastStart', '');
-    const p = parseClock(s);
-    if (p == null) { toast('Primero pon la hora de salida.'); return; }
-    armAt(p);
+    openKeypad({ title: `Hora de salida de ${tramos[sel].id}`, mode: 'time', onOk: setStartTime });
   } else if (b.id === 'btnGo') startNow();
   else if (b.id === 'btnCancel') cancelRun();
   else if (b.id === 'btnFinish') {
@@ -1598,18 +1650,36 @@ $('#startCard').addEventListener('click', (e) => {
 });
 $('#pilot').addEventListener('click', () => $('#pilot').classList.add('hidden'));
 $('#btnHito').addEventListener('click', (e) => passLandmark(+e.currentTarget.dataset.i));
-$('#btnRef').addEventListener('click', (e) => {
-  if (run.state !== 'running') return;
-  const el = (now() - run.startAt) / 1000;
-  recordMark(el, +e.currentTarget.dataset.km, 'ref', run.gpsKm);
-});
-$('#btnMark').addEventListener('click', () => {
+// Registrar km: la hora se fija en el momento del toque; luego se teclea la lectura o se elige una sugerencia
+$('#btnKm').addEventListener('click', () => {
   if (run.state !== 'running') return;
   const el = (now() - run.startAt) / 1000; const g = run.gpsKm;
   const m = curModel(); const ik = idealDist(m, el).d;
+  const gk = gpsValid() ? gpsKm() : null;
+  const pos = gk != null ? gk : ik;
+  const cal = S.calib || 1; const quick = [];
+  if (gk != null) quick.push({ label: `GPS ${fmtKm(gk)}`, fn: () => recordMark(el, gk / cal, 'gps', g) });
+  const vin = (ROADBOOK[tramos[sel].id] || []).filter((r) => r[0] != null && r[0] > 0 && pos != null && Math.abs(r[0] - pos) <= 0.8)
+    .sort((x, y) => Math.abs(x[0] - pos) - Math.abs(y[0] - pos)).slice(0, 3).sort((x, y) => x[0] - y[0]);
+  vin.forEach((r) => quick.push({ label: `${fmtKm(r[0])} · ${r[2].replace(/ \(.*?\)/g, '').slice(0, 26)}`, fn: () => recordMark(el, r[0] / cal, 'viñeta', g) }));
+  if (pos != null) { const lo = Math.floor(pos * 10) / 10; [lo, lo + 0.1].forEach((k) => { if (k > 0) quick.push({ label: fmtKm(k), fn: () => recordMark(el, k, 'tecleo', g) }); }); }
   beep(1200, 0.06);
-  openKeypad({ title: `Marca a ${fmtT(el, 1)} — lectura del tripmaster`, mode: 'km', sub: ik != null ? `ideal ${fmtKm(ik)}` : '', onOk: (v) => recordMark(el, v, 'tecleo', g) });
+  openKeypad({ title: `Km a ${fmtT(el, 1)}: teclea el tripmaster o elige`, mode: 'km', sub: ik != null ? `ideal ${fmtKm(ik)}` : '', quick, onOk: (v) => recordMark(el, v, 'tecleo', g) });
 });
+// ODO 1: pulsación larga para poner a cero · ODO 2: toque para poner a cero (ambos con «Deshacer»)
+function odoReset(k) {
+  const prev = odo[k]; odo[k] = 0; saveOdo(); beep(1500, 0.08); renderInstruments();
+  toast(`${k === 'a' ? 'ODO 1' : 'ODO 2'} a cero`, 'Deshacer', () => { odo[k] += prev; saveOdo(); renderInstruments(); });
+}
+(() => {
+  const el = $('#odo1'); let t = null;
+  const stop = () => { clearTimeout(t); t = null; el.classList.remove('holding'); };
+  el.addEventListener('pointerdown', (e) => { e.preventDefault(); el.classList.add('holding'); t = setTimeout(() => { stop(); odoReset('a'); }, 700); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => el.addEventListener(ev, stop));
+  el.addEventListener('contextmenu', (e) => e.preventDefault());
+})();
+$('#odo2').addEventListener('click', () => odoReset('b'));
+$('#btnGpsOn').addEventListener('click', () => { S.gpsOn = true; saveS(); gpsStart(); renderAll(); });
 $('#tblTc').addEventListener('change', (e) => { tblSel = +e.target.value; lastCurRow = null; renderTable(); });
 $('#tblStep').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; S.tblStep = b.dataset.v === 'rb' ? 'rb' : +b.dataset.v; saveS(); renderSegs(); renderTable(); lastCurRow = null; });
 $('#tblFollow').addEventListener('click', () => { S.tblFollow = !S.tblFollow; saveS(); renderSegs(); });
@@ -1668,7 +1738,7 @@ const segHandler = (id, key, num = true) => $('#' + id).addEventListener('click'
   if (run.state === 'running') { buildEvents(); lastEl = (now() - run.startAt) / 1000; }
   renderAll();
 });
-segHandler('leadSeg', 'lead'); segHandler('refBeepSeg', 'refBeep'); segHandler('refStepSeg', 'refStep'); segHandler('themeSeg', 'theme', false);
+segHandler('leadSeg', 'lead'); segHandler('refBeepSeg', 'refBeep'); segHandler('themeSeg', 'theme', false);
 $('#testSound').onclick = () => { ensureAudio(); beep(1300, 0.1); setTimeout(() => beep(1700, 0.4), 250); setTimeout(() => say('Cambio a cuarenta y nueve coma nueve en diez segundos'), 700); };
 $$('[data-calc]').forEach((b) => b.onclick = () => {
   const d = parseNum($('#cDist').value), v = parseNum($('#cVel').value), t = parseTimeSpan($('#cTime').value);

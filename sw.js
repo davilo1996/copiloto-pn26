@@ -1,5 +1,5 @@
 // Service worker: guarda la app en caché para usarla sin conexión.
-const CACHE = 'copiloto-pn26-v4';
+const CACHE = 'copiloto-pn26-v5';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './Ruta-PN26-Etapa2.gpx', './Ruta-PN26-Etapa2.kml'];
 
 self.addEventListener('install', (e) => {
