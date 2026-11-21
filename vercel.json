@@ -1,13 +1,70 @@
 {
   "headers": [
-    { "source": "/sw.js", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
-    { "source": "/(index.html)?", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] },
-    { "source": "/Tablas-PN26.numbers", "headers": [
-      { "key": "Content-Type", "value": "application/vnd.apple.numbers" },
-      { "key": "Content-Disposition", "value": "attachment; filename=\"Tablas-PN26.numbers\"" }
-    ] },
-    { "source": "/Tablas-PN26.xlsx", "headers": [
-      { "key": "Content-Disposition", "value": "attachment; filename=\"Tablas-PN26.xlsx\"" }
-    ] }
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    },
+    {
+      "source": "/(index.html)?",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    },
+    {
+      "source": "/Tablas-PN26.numbers",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/vnd.apple.numbers"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"Tablas-PN26.numbers\""
+        }
+      ]
+    },
+    {
+      "source": "/Tablas-PN26.xlsx",
+      "headers": [
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"Tablas-PN26.xlsx\""
+        }
+      ]
+    },
+    {
+      "source": "/Ruta-PN26-Etapa2.gpx",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/gpx+xml"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"Ruta-PN26-Etapa2.gpx\""
+        }
+      ]
+    },
+    {
+      "source": "/Ruta-PN26-Etapa2.kml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/vnd.google-earth.kml+xml"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"Ruta-PN26-Etapa2.kml\""
+        }
+      ]
+    }
   ]
 }

@@ -151,6 +151,16 @@ table.t tr.chg td{background:color-mix(in srgb,var(--accent) 18%,transparent);fo
 table.t tr.unc td{color:var(--muted);font-style:italic}
 table.t tr.cur td{background:var(--accent);color:var(--accent-ink)}
 table.t td.m{color:var(--muted);font-size:16px}
+table.t.rb td.n{color:var(--muted);font-size:14px;font-weight:700;text-align:center}
+table.t.rb td.txt{text-align:left;font-size:16px;font-weight:600;line-height:1.3}
+table.t.rb th.txt{text-align:left}
+table.t.rb tr.chg td.txt{font-weight:800}
+table.t.rb tr.fin td{border-bottom:2px solid var(--text)}
+.rb-wrap{overflow-x:auto}
+@media (max-width:640px){table.t.rb td,table.t.rb th{padding:6px 5px}table.t.rb td{font-size:16px}table.t.rb td.txt{font-size:13px}table.t.rb td.m{font-size:13px}table.t.rb .n{display:none}}
+.rt-card h3{margin:0 0 4px;font-size:20px;font-weight:900}
+.rt-card .tcpill{display:inline-block;background:var(--late);color:#fff;border-radius:8px;padding:2px 8px;font-size:14px;font-weight:900;margin-right:6px}
+.rt-card .warn{color:var(--warn);font-size:13px;font-weight:700;margin-top:6px}
 .tables-wrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px;align-items:start}
 
 /* ---------- tramos ---------- */
@@ -234,6 +244,7 @@ textarea.in{font-weight:500;font-size:16px;min-height:80px}
   <nav class="tabs" id="tabs">
     <button data-tab="carrera" class="on">Carrera</button>
     <button data-tab="tabla">Tablas</button>
+    <button data-tab="ruta">Ruta</button>
     <button data-tab="tramos">Tramos</button>
     <button data-tab="registro">Registro</button>
     <button data-tab="ajustes">Ajustes</button>
@@ -325,6 +336,7 @@ textarea.in{font-weight:500;font-size:16px;min-height:80px}
   <div class="tbar">
     <select class="in" id="tblTc" style="width:auto"></select>
     <div class="seg" id="tblStep">
+      <button data-v="rb">Viñetas</button>
       <button data-v="0.1">100 m</button>
       <button data-v="0.2">200 m</button>
       <button data-v="0.5">500 m</button>
@@ -333,6 +345,17 @@ textarea.in{font-weight:500;font-size:16px;min-height:80px}
     <span class="sub" id="tblInfo"></span>
   </div>
   <div id="tblWrap"></div>
+</section>
+
+<!-- ================= RUTA ================= -->
+<section id="tab-ruta">
+  <div class="tbar">
+    <a class="btn sm acc" href="Ruta-PN26-Etapa2.gpx" download>Descargar GPX</a>
+    <a class="btn sm" href="Ruta-PN26-Etapa2.kml" download>Descargar KML</a>
+    <span class="sub">Etapa 2 · Parque Cerrado → TC7 … TC16 → Llegada (Santa Fe)</span>
+  </div>
+  <p class="note" style="margin-top:0">Ruta sacada del <b>roadbook</b> y trazada sobre las carreteras que indica (GR-3204, GR-5209, GR-5207, GR-5206, A-4131, GR-5204, A-345, A-348, GR-5300, A-4050…). <b>Google Maps</b> abre el sector completo con sus puntos de paso. <b>Apple Maps</b> y <b>Waze</b> solo admiten el destino, así que pueden coger otro camino. Para seguir la traza exacta, importa el <b>GPX</b> en OsmAnd, Guru Maps o Gaia GPS, o el <b>KML</b> en Google My Maps. Los enlaces necesitan cobertura; el GPX importado funciona sin ella. <b>Manda siempre el roadbook.</b></p>
+  <div class="grid" id="routeList"></div>
 </section>
 
 <!-- ================= TRAMOS ================= -->
@@ -531,6 +554,10 @@ const DEFAULT_NOTES = {
   TC13: 'Media por TABLAS: la organización las entrega aparte. Introdúcelas aquí (Editar) antes del tramo.',
   TC14: 'Salida lanzada.'
 };
+
+/* Roadbook (etapa 2, TC7–TC16): viñetas [km desde la salida, nº, indicación, punto sin km, km estimado] y sectores de enlace con enlaces de navegación */
+const ROADBOOK = {"TC7":[[0.0,182,"Salida · farola junto a naranjo (GR-3204)"],[0.45,183,"Bifurcación: derecha"],[4.598,184,"Recto · hito GR-3204 km 5"],[4.824,185,"Izquierda → Pinos del Valle 5"],[6.822,186,"Izquierda (desvío a la dcha.)"],[8.616,187,"FIN TC7 · hito GR-3204 km 9"]],"TC8":[[0.0,189,"Salida · paso de peatones (El Pilar)"],[0.135,190,"Recto (cruce a la izq., parada bus)"],[1.275,191,"Seguir principal a la derecha"],[3.524,192,"Recto · hito GR-3204 km 13"],[10.554,193,"Recto · hito GR-3204 km 20"],[14.639,194,"Seguir principal (desvío a la dcha.)"],[15.076,195,"Entrada Güájar Faragüit"],[15.302,196,"Horquilla a la izquierda junto al BAR"],[16.595,197,"Recto · hito GR-3204 km 26"],[16.806,198,"Izquierda (desvío a la dcha.)"],[21.872,199,"Recto (cruce a la dcha.)"],[22.019,200,"FIN TC8 · peligro desprendimientos"]],"TC9":[[0.0,214,"Salida en farola · STOP: derecha GR-5209"],[0.225,215,"Recto (desvío a la dcha.)"],[2.552,216,"Izquierda en cruce"],[3.018,217,"Recto (cruce a la izq.)"],[3.267,218,"Derecha → Castell de Ferro"],[5.868,219,"Recto · hito GR-5209 km 6"],[9.757,220,"Izquierda GR-5207 → Lújar 10"],[13.266,221,"Derecha (desvío a la izq.)"],[14.183,222,"Recto (desvío a la dcha.)"],[15.392,223,"Recto · hito GR-5207 km 4"],[19.235,224,"FIN TC9 · cartel Lújar"]],"TC10":[[0.0,227,"Salida LANZADA · hito GR-5206 km 13"],[4.036,228,"Recto · hito GR-5206 km 9"],[8.516,229,"Izquierda (NO a Rubite)"],[13.083,230,"STOP: derecha A-4131 → Albuñol 25"],[15.691,231,"FIN TC10 · hito A-4131 km 14"]],"TC11":[[0.0,233,"Salida · hito GR-5204 km 0"],[0.228,234,"Izquierda (desvío a la dcha.)"],[0.972,235,"Izquierda · hito km 1"],[null,236,"Hito GR-5204 km 4 · CAMBIO DE MEDIA","HITO 4",4.04],[null,237,"Hito GR-5204 km 5 · CAMBIO DE MEDIA","HITO 5",5.05],[5.338,238,"Recto (desvío a la izq.)"],[null,239,"Señal 40 · CAMBIO DE MEDIA","SEÑAL 40",null],[13.12,240,"FIN TC11 · hito GR-5204 km 13"]],"TC12":[[0.0,259,"Salida · paso de peatones (Torvizcón); a 40 m dcha. junto al hotel"],[0.215,260,"Derecha → Contraviesa 10 (subida pronunciada)"],[0.638,261,"Horquilla a la izquierda"],[8.532,262,"Izquierda (desvío a la dcha.)"],[10.762,263,"STOP: derecha GR-5204 → Órgiva 32"],[15.095,264,"Recto · hito GR-5204 km 1"],[15.859,265,"Derecha (bifurcación)"],[16.138,266,"Ceda: derecha A-4131 → Órgiva 23"],[17.148,267,"FIN TC12 · hito A-4131 km 15"]],"TC13":[[0.0,269,"Salida · final de línea continua (salir con precaución)"],[3.008,270,"Izquierda GR-5206 → Rubite 5"],[7.506,271,"Derecha → Castell de Ferro 15"],[10.938,272,"Recto · hito GR-5206 km 8"],[15.91,273,"FIN TC13 · hito GR-5206 km 13"]],"TC14":[[0.0,281,"Salida LANZADA · hito GR-5209 km 19"],[0.235,282,"Recto (camino a la izq.)"],[1.627,283,"Recto (cruce)"],[4.752,284,"Travesía Gualchos (30) · recto"],[5.973,285,"Recto · hito GR-5209 km 13"],[9.106,286,"Izquierda → Motril 13"],[15.575,287,"Izquierda (desvío a la dcha.)"],[16.005,288,"FIN TC14 · hito GR-5209 km 3"]],"TC15":[[0.0,302,"Salida en STOP · incorporación GR-5300 (hito 10)"],[0.456,303,"Izquierda (desvío a la dcha.)"],[4.226,304,"Seguir principal · badén (señal 20)"],[4.297,305,"Rotonda: izquierda"],[4.957,306,"Izquierda (bifurcación) · hito 5"],[9.847,307,"FIN TC15 · en ceda el paso"]],"TC16":[[0.0,310,"Salida · señal de cruce (A-4050), limitación 30"],[0.117,311,"Recto (desvío a la dcha.)"],[4.44,312,"Seguir a la izquierda (cruce)"],[7.334,313,"¡Firme en mal estado!"],[11.905,314,"Recto · hito A-4050 km 35"],[15.921,315,"Recto · hito A-4050 km 31"],[21.976,316,"FIN TC16 · hito A-4050 km 25"]]};
+const RUTA = [{"id":"PC-TC7","title":"Parque Cerrado → TC7","rb_km":33.382,"osm_km":33.891,"time":"00h35","media":57.2,"google":"https://www.google.com/maps/dir/?api=1&origin=37.146527,-3.613550&destination=36.945433,-3.554147&travelmode=driving&waypoints=37.080342,-3.648459%7C37.002901,-3.580085%7C36.963731,-3.547699%7C36.948071,-3.550762","apple":"https://maps.apple.com/?daddr=36.945433,-3.554147&dirflg=d","waze":"https://waze.com/ul?ll=36.945433,-3.554147&navigate=yes","tc":null,"tc_km":null},{"id":"TC7-TC8","title":"TC7 → TC8","rb_km":9.115,"osm_km":8.83,"time":"00h15","media":36.5,"google":"https://www.google.com/maps/dir/?api=1&origin=36.945433,-3.554147&destination=36.909002,-3.558026&travelmode=driving&waypoints=36.935644,-3.572101%7C36.929287,-3.582547%7C36.910592,-3.558512","apple":"https://maps.apple.com/?daddr=36.909002,-3.558026&dirflg=d","waze":"https://waze.com/ul?ll=36.909002,-3.558026&navigate=yes","tc":"TC7","tc_km":8.616},{"id":"TC8-TC9","title":"TC8 → TC9","rb_km":40.121,"osm_km":41.784,"time":"01h11","media":33.9,"google":"https://www.google.com/maps/dir/?api=1&origin=36.909002,-3.558026&destination=36.729910,-3.481029&travelmode=driving&waypoints=36.840940,-3.582003%7C36.812677,-3.544035%7C36.791888,-3.541670%7C36.747200,-3.563400%7C36.726200,-3.506800","apple":"https://maps.apple.com/?daddr=36.729910,-3.481029&dirflg=d","waze":"https://waze.com/ul?ll=36.729910,-3.481029&navigate=yes","tc":"TC8","tc_km":22.019},{"id":"TC9-TC10","title":"TC9 → TC10","rb_km":26.059,"osm_km":25.881,"time":"00h36","media":43.4,"google":"https://www.google.com/maps/dir/?api=1&origin=36.729910,-3.481029&destination=36.771252,-3.381771&travelmode=driving&waypoints=36.748081,-3.414939%7C36.785526,-3.407695%7C36.778796,-3.391617","apple":"https://maps.apple.com/?daddr=36.771252,-3.381771&dirflg=d","waze":"https://waze.com/ul?ll=36.771252,-3.381771&navigate=yes","tc":"TC9","tc_km":19.235},{"id":"TC10-TC11","title":"TC10 → TC11","rb_km":17.773,"osm_km":17.659,"time":"00h27","media":39.5,"google":"https://www.google.com/maps/dir/?api=1&origin=36.771252,-3.381771&destination=36.813280,-3.305925&travelmode=driving&waypoints=36.820455,-3.340114%7C36.816828,-3.324403","apple":"https://maps.apple.com/?daddr=36.813280,-3.305925&dirflg=d","waze":"https://waze.com/ul?ll=36.813280,-3.305925&navigate=yes","tc":"TC10","tc_km":15.691},{"id":"TC11-REAG","title":"TC11 → Reagrupamiento (Cádiar)","rb_km":25.8,"osm_km":22.832,"time":"00h41","media":37.8,"google":"https://www.google.com/maps/dir/?api=1&origin=36.813280,-3.305925&destination=36.925758,-3.178809&travelmode=driving&waypoints=36.870882,-3.210223","apple":"https://maps.apple.com/?daddr=36.925758,-3.178809&dirflg=d","waze":"https://waze.com/ul?ll=36.925758,-3.178809&navigate=yes","tc":"TC11","tc_km":13.12},{"id":"REAG-TC12","title":"Reagrupamiento → TC12","rb_km":20.117,"osm_km":16.972,"time":"00h40","media":30.2,"google":"https://www.google.com/maps/dir/?api=1&origin=36.925758,-3.178809&destination=36.878894,-3.299889&travelmode=driving","apple":"https://maps.apple.com/?daddr=36.878894,-3.299889&dirflg=d","waze":"https://waze.com/ul?ll=36.878894,-3.299889&navigate=yes","tc":null,"tc_km":null},{"id":"TC12-TC13","title":"TC12 → TC13","rb_km":17.771,"osm_km":17.539,"time":"00h26","media":41.0,"google":"https://www.google.com/maps/dir/?api=1&origin=36.878894,-3.299889&destination=36.815552,-3.322019&travelmode=driving&waypoints=36.845428,-3.271704%7C36.813280,-3.305925%7C36.816844,-3.318386","apple":"https://maps.apple.com/?daddr=36.815552,-3.322019&dirflg=d","waze":"https://waze.com/ul?ll=36.815552,-3.322019&navigate=yes","tc":"TC12","tc_km":17.148},{"id":"TC13-TC14","title":"TC13 → TC14","rb_km":24.068,"osm_km":24.354,"time":"00h37","media":39.0,"google":"https://www.google.com/maps/dir/?api=1&origin=36.815552,-3.322019&destination=36.727377,-3.367601&travelmode=driving&waypoints=36.770575,-3.381624%7C36.722480,-3.359142","apple":"https://maps.apple.com/?daddr=36.727377,-3.367601&dirflg=d","waze":"https://waze.com/ul?ll=36.727377,-3.367601&navigate=yes","tc":"TC13","tc_km":15.91},{"id":"TC14-TC15","title":"TC14 → TC15","rb_km":38.629,"osm_km":38.437,"time":"00h57","media":40.7,"google":"https://www.google.com/maps/dir/?api=1&origin=36.727377,-3.367601&destination=36.784289,-3.610037&travelmode=driving&waypoints=36.740049,-3.387165%7C36.737984,-3.453145%7C36.737643,-3.489718%7C36.781653,-3.526078","apple":"https://maps.apple.com/?daddr=36.784289,-3.610037&dirflg=d","waze":"https://waze.com/ul?ll=36.784289,-3.610037&navigate=yes","tc":"TC14","tc_km":16.005},{"id":"TC15-TC16","title":"TC15 → TC16","rb_km":13.471,"osm_km":13.378,"time":"00h20","media":40.4,"google":"https://www.google.com/maps/dir/?api=1&origin=36.784289,-3.610037&destination=36.822765,-3.684004&travelmode=driving&waypoints=36.804367,-3.664499","apple":"https://maps.apple.com/?daddr=36.822765,-3.684004&dirflg=d","waze":"https://waze.com/ul?ll=36.822765,-3.684004&navigate=yes","tc":"TC15","tc_km":9.847},{"id":"TC16-FIN","title":"TC16 → Llegada (Santa Fe)","rb_km":72.206,"osm_km":70.662,"time":"01h31","media":47.6,"google":"https://www.google.com/maps/dir/?api=1&origin=36.822765,-3.684004&destination=37.193126,-3.722409&travelmode=driving&waypoints=36.891832,-3.731969%7C36.953387,-3.722392%7C37.068979,-3.651619%7C37.101330,-3.722856","apple":"https://maps.apple.com/?daddr=37.193126,-3.722409&dirflg=d","waze":"https://waze.com/ul?ll=37.193126,-3.722409&navigate=yes","tc":"TC16","tc_km":21.976}];
 
 /* ============================ utilidades ============================ */
 const $ = (s, r = document) => r.querySelector(s);
@@ -1223,9 +1250,10 @@ function renderTable() {
   if (selEl.options.length !== tramos.length) selEl.innerHTML = tramos.map((t, i) => `<option value="${i}">${t.id}</option>`).join('');
   selEl.value = String(tblSel);
   const tr = tramos[tblSel];
+  const startMs = (run.state === 'running' && tblSel === sel) ? run.startAt : (run.state === 'armed' && tblSel === sel) ? run.armedAt : (salidas[tr.id] ? (() => { const b = new Date(now()); b.setHours(0, 0, 0, 0); return b.getTime() + parseClock(salidas[tr.id]) * 1000; })() : null);
+  if (S.tblStep === 'rb') { renderRoadbookTable(tr, startMs); return; }
   const m = buildModel(tr, S.cond, (run.state !== 'idle' && tblSel === sel) ? run.manual : null);
   const rows = tableRows(m, S.tblStep);
-  const startMs = (run.state === 'running' && tblSel === sel) ? run.startAt : (run.state === 'armed' && tblSel === sel) ? run.armedAt : (salidas[tr.id] ? (() => { const b = new Date(now()); b.setHours(0, 0, 0, 0); return b.getTime() + parseClock(salidas[tr.id]) * 1000; })() : null);
   const iss = tramoIssues(tr, S.cond); const op = openSeg(m);
   setT($('#tblInfo'), `${tr.id} · ${S.cond.toUpperCase()} · ${fmtKm(lengthOf(m))} km · ${ap(m)}${fmtT(idealTime(m, lengthOf(m)), 2)}${iss.length ? ' · ⚠ ' + iss.join(', ') : ''}${op ? ` · * filas en gris: válidas solo hasta ${op.bLabel || 'el punto sin km'}` : ''}`);
   // repartir en columnas para iPad apaisado
@@ -1236,6 +1264,87 @@ function renderTable() {
   setH($('#tblWrap'), html);
   tblRowsCache = rows;
 }
+/* ---------- tabla por viñetas del roadbook ---------- */
+// Cruza las viñetas del roadbook con las medias del tramo: tiempo ideal acumulado en cada viñeta y en cada cambio de media.
+function roadbookRows(tr, cond, manualIn) {
+  const vin = ROADBOOK[tr.id]; if (!vin) return null;
+  const manual = Object.assign({}, manualIn || {}); const est = {};
+  tr.segs.forEach((s, i) => { // puntos sin km (HITO 4…): km de la marca en carrera o, si no, estimación del roadbook
+    if (s.h == null && s.hl && manual[i] == null) { const v = vin.find((r) => r[3] === s.hl); if (v && v[4] != null) { manual[i] = v[4]; est[i] = true; } }
+  });
+  const m = buildModel(tr, cond, manual);
+  const segOfLabel = (lbl) => tr.segs.findIndex((s) => s.hl === lbl);
+  const firstEst = Math.min(...Object.keys(est).map((i) => manual[i]), Infinity);
+  const rows = []; let prevKey = 0;
+  vin.forEach((r) => {
+    let km = r[0], approx = false;
+    if (km == null && r[3]) { const i = segOfLabel(r[3]); if (i >= 0 && m[i].b != null) { km = m[i].b; approx = !!est[i]; } }
+    const key = km != null ? km : prevKey + 1e-4; prevKey = key;
+    rows.push({ kind: 'v', km, key, n: r[1], txt: r[2], label: r[3] || null, approx, fin: /^FIN/.test(r[2]) });
+  });
+  m.forEach((s, i) => { // cambios de media que no coinciden con una viñeta
+    if (i === 0 || s.a == null) return;
+    const hit = rows.find((r) => r.kind === 'v' && ((s.aLabel && r.label === s.aLabel) || (r.km != null && Math.abs(r.km - s.a) < 0.0005)));
+    if (hit) hit.chg = true;
+    else rows.push({ kind: 'c', km: s.a, key: s.a, n: '', txt: `Cambio de media${s.aLabel ? ' (' + s.aLabel + ')' : ''}`, chg: true, approx: s.a >= firstEst - 1e-9 && est[i - 1] });
+  });
+  rows.sort((a, b) => a.key - b.key || (a.kind === 'v' ? -1 : 1));
+  const op = openSeg(m);
+  // hasta dónde vale la media del tramo abierto: la viñeta del punto sin km (por orden del roadbook) o el mínimo de «11,0XX»
+  const opIdx = op ? rows.findIndex((r) => r.label && r.label === op.bLabel) : -1;
+  const mm = op && op.bLabel ? /^(\d+)[,.](\d*)X/i.exec(op.bLabel) : null;
+  const opMin = mm ? parseFloat(mm[1] + '.' + (mm[2] || '0')) : (op ? op.a : Infinity);
+  rows.forEach((r, idx) => {
+    if (r.km == null) { r.t = null; r.unknown = true; const i = r.label ? segOfLabel(r.label) : -1; if (i >= 0 && m[i + 1]) { r.v = m[i + 1].v; r.note = m[i + 1].note; r.chg = true; } return; }
+    const si = segIndexAt(m, r.km + 1e-7); const s = m[Math.min(si, m.length - 1)];
+    r.v = s ? s.v : null; r.note = s ? s.note : null;
+    r.t = idealTime(m, r.km);
+    if (r.km > firstEst + 1e-9) r.approx = true;
+    const beyond = op && r.km > op.a + 1e-9 && (opIdx >= 0 ? idx > opIdx : r.km > opMin - 1e-9);
+    if (beyond) { const nx = m[op.i + 1]; if (!nx || nx.v == null) { r.t = null; r.v = null; r.note = nx ? nx.note : null; } else r.unc = true; r.after = op.bLabel; }
+    else if (op && r.km > op.a + 1e-9) { r.v = op.v; r.note = op.note; }
+  });
+  return { rows, m, op, est: Object.keys(est).length > 0 };
+}
+function renderRoadbookTable(tr, startMs) {
+  const res = roadbookRows(tr, S.cond, (run.state !== 'idle' && tblSel === sel) ? run.manual : null);
+  if (!res) {
+    setT($('#tblInfo'), `${tr.id} · sin roadbook cargado (solo TC7–TC16)`);
+    setH($('#tblWrap'), '<p class="note">Este tramo no está en el roadbook que queda de carrera. Usa la tabla cada 100, 200 o 500 m.</p>');
+    tblRowsCache = []; return;
+  }
+  const { rows, m, op, est } = res;
+  const L = lengthOf(m); const iss = tramoIssues(tr, S.cond);
+  const warn = [];
+  if (est) warn.push('≈ km de los hitos estimados (hito 0 → km 13 del roadbook); corrige con «Paso por…» o en Editar');
+  if (rows.some((r) => r.unc)) warn.push(`* filas en gris: solo válidas hasta ${op.bLabel || 'el punto sin km'}`);
+  if (rows.some((r) => r.km != null && r.t == null && !r.unknown)) warn.push('— sin media publicada (TABLAS/HITOS): mételas en Tramos → Editar');
+  setT($('#tblInfo'), `${tr.id} · ${S.cond.toUpperCase()} · viñetas del roadbook · ${fmtKm(L)} km${iss.length ? ' · ⚠ ' + iss.join(', ') : ''}${warn.length ? ' · ' + warn.join(' · ') : ''}`);
+  const fmtRowT = (r) => r.unknown ? 'al pasar' : r.t == null ? '—' : (r.approx ? '≈' : '') + fmtT(r.t, 2) + (r.unc ? '*' : '');
+  const html = `<div class="card rb-wrap" style="padding:0"><table class="t rb"><thead><tr><th>Km</th><th class="n">Nº</th><th class="txt">Indicación</th><th>Tiempo</th>${startMs ? '<th>Hora</th>' : ''}<th>Media</th></tr></thead><tbody>${rows.map((r) =>
+    `<tr data-km="${r.km ?? ''}" class="${r.chg ? 'chg' : ''}${r.unc || r.unknown ? ' unc' : ''}${r.fin ? ' fin' : ''}"><td>${r.km == null ? '—' : (r.approx && r.kind === 'v' && r.label ? '≈' : '') + fmtKm(r.km)}</td><td class="n">${r.n}</td><td class="txt">${esc(r.txt)}</td><td>${fmtRowT(r)}</td>${startMs ? `<td class="m">${r.t != null ? fmtClock(startMs + r.t * 1000) : ''}</td>` : ''}<td class="m">${r.fin ? '' : r.chg || r.kind === 'c' || r.km === 0 ? `<b style="color:var(--text)">${r.v != null ? fmtV(r.v) : esc(r.note || '—')}</b>` : (r.v != null ? fmtV(r.v) : esc(r.note || ''))}</td></tr>`).join('')}</tbody></table></div>`;
+  setH($('#tblWrap'), html);
+  let last = 0; tblRowsCache = rows.map((r) => ({ km: r.km != null ? (last = r.km) : last + 1e-4 }));
+}
+
+/* ---------- ruta (enlaces de navegación) ---------- */
+function renderRoute() {
+  setH($('#routeList'), RUTA.map((s, i) => {
+    const d = s.osm_km - s.rb_km;
+    return `<div class="card rt-card"><h3>${i + 1}. ${esc(s.title)}</h3>
+      <div class="sub">${fmtKm(s.rb_km)} km · ${(([h, mi]) => (+h ? +h + ' h ' : '') + (+mi) + ' min')(s.time.split('h'))} · media ${fmtV(s.media)}</div>
+      ${s.id === 'PC-TC7' ? '<div class="warn">La ruta empieza en la rotonda del C.C. Nevada (viñeta 161, km 3,259). Hasta ahí, desde el Parque Cerrado, sigue el roadbook.</div>' : ''}
+      ${s.tc ? `<div style="margin:8px 0 4px"><span class="tcpill">${s.tc}</span><span class="sub">${fmtKm(s.tc_km)} km · salida al inicio del sector</span></div>` : ''}
+      ${s.tc === 'TC11' ? '<div class="warn">La portada del TC11 da como salida el cruce con la A-345, que es el final. Aquí la salida está en el hito 0 de la GR-5204, junto a la A-4131.</div>' : ''}
+      ${Math.abs(d) > 1 ? `<div class="warn">En el mapa salen ${fmtKm(s.osm_km)} km (${d > 0 ? '+' : '−'}${fmtKm(Math.abs(d))} respecto al roadbook): mismas carreteras, sigue las viñetas.</div>` : ''}
+      <div class="row" style="margin-top:10px">
+        <a class="btn sm acc" href="${s.google}" target="_blank" rel="noopener">Google Maps</a>
+        <a class="btn sm" href="${s.apple}" target="_blank" rel="noopener">Apple Maps</a>
+        <a class="btn sm" href="${s.waze}" target="_blank" rel="noopener">Waze</a>
+      </div></div>`;
+  }).join(''));
+}
+
 let tblSel = sel, tblRowsCache = [], lastCurRow = null;
 function updateTableCursor(o) {
   if (!$('#tab-tabla').classList.contains('on') || run.state !== 'running' || tblSel !== sel || o.pos == null) return;
@@ -1307,6 +1416,7 @@ function renderAll() {
   applyTheme(); renderSegs(); renderTcBar(); renderStartCard(); renderLive();
   if ($('#tab-tabla').classList.contains('on')) { renderTable(); lastCurRow = null; }
   if ($('#tab-tramos').classList.contains('on')) renderTramos();
+  if ($('#tab-ruta').classList.contains('on')) renderRoute();
   if ($('#tab-registro').classList.contains('on')) renderLog();
   if ($('#tab-ajustes').classList.contains('on')) renderSettings();
 }
@@ -1501,7 +1611,7 @@ $('#btnMark').addEventListener('click', () => {
   openKeypad({ title: `Marca a ${fmtT(el, 1)} — lectura del tripmaster`, mode: 'km', sub: ik != null ? `ideal ${fmtKm(ik)}` : '', onOk: (v) => recordMark(el, v, 'tecleo', g) });
 });
 $('#tblTc').addEventListener('change', (e) => { tblSel = +e.target.value; lastCurRow = null; renderTable(); });
-$('#tblStep').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; S.tblStep = +b.dataset.v; saveS(); renderSegs(); renderTable(); lastCurRow = null; });
+$('#tblStep').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; S.tblStep = b.dataset.v === 'rb' ? 'rb' : +b.dataset.v; saveS(); renderSegs(); renderTable(); lastCurRow = null; });
 $('#tblFollow').addEventListener('click', () => { S.tblFollow = !S.tblFollow; saveS(); renderSegs(); });
 $('#tcGrid').addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return;

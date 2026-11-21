@@ -8,6 +8,7 @@ y comprobadas contra las *Tablas comunes* oficiales (1.650 filas, diferencia má
 - `index.html` — la app completa (datos incluidos, sin dependencias externas)
 - `sw.js`, `manifest.webmanifest`, `icon-*.png` — para instalarla en el iPad y usarla sin conexión
 - `Tablas-PN26.numbers` / `Tablas-PN26.xlsx` — todas las tablas de respaldo en papel/Numbers (también se descargan desde *Ajustes*)
+- `Ruta-PN26-Etapa2.gpx` / `.kml` — ruta de la etapa 2 sacada del roadbook (también se descargan desde *Ruta*)
 
 ## Instalar en el iPad (sin conexión)
 Safari solo guarda una web para usarla sin conexión si se sirve por **https**. Lo más fácil:
@@ -31,6 +32,25 @@ Safari solo guarda una web para usarla sin conexión si se sirve por **https**. 
    o pulsa **MARCA** y teclea la lectura. Verás el **adelanto o retraso** en segundos y a qué velocidad ir para corregirlo en 500 m.
 6. **Pantalla piloto**: solo la media y el próximo cambio, en grande.
 7. **TERMINAR** guarda el tramo en el **Registro** (se puede exportar en CSV).
+
+## Tabla por viñetas del roadbook (TC7–TC16)
+En **Tablas → Viñetas** cada TC sale con las viñetas del roadbook y los cambios de media: km, nº de viñeta, indicación,
+**tiempo ideal acumulado**, hora (si hay hora de salida) y media en vigor.
+- Con **SECO** activado los tiempos coinciden con las *Tablas comunes en seco* (diferencia máxima 0,005 s).
+- **TC11**: los hitos km 4 y km 5 van con km estimado (≈4,04 y ≈5,05, escalando el hito 0 → hito 13 del roadbook).
+  Al pulsar «Paso por…» en carrera, la tabla usa tu marca. La señal 40 no tiene km: lo que hay detrás va en gris (*).
+- **TC12**: hasta 11,0XX (STOP en la GR-5204 incluido) hay tiempos; después, «—» (medias por HITOS).
+- **TC13**: medias por TABLAS. Cuando las metas en *Tramos → Editar*, salen los tiempos.
+- Copia de respaldo en `../Tiempos-por-viñeta-SECO.csv`.
+
+## Ruta (navegación)
+La pestaña **Ruta** tiene los 12 sectores (Parque Cerrado → TC7 … TC16 → Llegada) con botones para **Google Maps**
+(sector completo con puntos de paso), **Apple Maps** y **Waze** (estos dos solo con el destino).
+También se descargan `Ruta-PN26-Etapa2.gpx` (para OsmAnd, Guru Maps o Gaia GPS, que siguen la traza exacta) y `.kml` (para Google My Maps).
+- **Ojo, TC11**: la portada del roadbook da como salida el cruce con la A-345, que es el **final** del tramo.
+  La salida real es el hito 0 de la GR-5204, junto a la A-4131, y así va en la ruta.
+- En los sectores de Cádiar (TC11 → reagrupamiento y reagrupamiento → TC12) Google y OpenStreetMap dan unos 3 km menos que el roadbook,
+  por las mismas carreteras. Manda el roadbook.
 
 ## Tramos especiales
 - **TC5 y TC13: «TABLAS»**: la organización entregará las medias aparte. Mételas en *Tramos → Editar*.
